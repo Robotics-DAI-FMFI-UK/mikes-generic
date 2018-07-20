@@ -13,14 +13,14 @@ void key_listener(int key)
   println_to_window(window, prn);
 
   switch (key) {
-    case KEY_UP: set_motor_speeds(12, 12);
-                 break;
-    case KEY_LEFT: set_motor_speeds(-12, 12);
-                   break;
-    case KEY_RIGHT: set_motor_speeds(12, -12);
-                    break;
-    case KEY_DOWN: set_motor_speeds(-12, -12);
-                   break;
+    case KEY_UP_ARROW: set_motor_speeds(12, 12);
+                       break;
+    case KEY_LEFT_ARROW: set_motor_speeds(-12, 12);
+                         break;
+    case KEY_RIGHT_ARROW: set_motor_speeds(12, -12);
+                          break;
+    case KEY_DOWN_ARROW: set_motor_speeds(-12, -12);
+                         break;
     case ' ': stop_now();
               break;
     case KEY_ESC: program_runs = 0;
@@ -31,6 +31,7 @@ void key_listener(int key)
 void init_ui()
 {
    window = open_window();
+   set_window_title(window, "pressed keys");
    add_key_listener("manual", key_listener);
 }
 
