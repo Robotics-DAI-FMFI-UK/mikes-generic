@@ -13,7 +13,7 @@ void load_config()
     printf("load_config()\n");
 
     config_data cfg = read_config(MIKES_CONFIG);
-    if (cfg == 0) 
+    if (cfg == 0)
     {
        printf("Could not open config file %s\n", MIKES_CONFIG);
        program_runs = 0;
@@ -40,9 +40,10 @@ void load_config()
     mikes_config.use_line_filter = config_get_intval(cfg, "use_line_filter", mikes_config.use_line_filter);
     mikes_config.use_tim_segment = config_get_intval(cfg, "use_tim_segment", mikes_config.use_tim_segment);
 
+    mikes_config.map_azimuth = config_get_doubleval(cfg, "map_azimuth", mikes_config.map_azimuth);
+
     mikes_config.line_map_file = config_get_alloc_strval(cfg, "line_map_file", "file_missing_in_config");
     mikes_config.xtion_samples_config = config_get_alloc_strval(cfg, "xtion_samples_config", "file_missing_in_config");
-   
+
     config_dispose(cfg);
 }
-
