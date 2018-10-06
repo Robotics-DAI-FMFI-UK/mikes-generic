@@ -10,6 +10,8 @@ mikes_config_t mikes_config;
 
 void load_config()
 {
+    printf("load_config()\n");
+
     config_data cfg = read_config(MIKES_CONFIG);
     if (cfg == 0) 
     {
@@ -30,12 +32,16 @@ void load_config()
 
     mikes_config.use_rplidar = config_get_intval(cfg, "use_rplidar", mikes_config.use_rplidar);
     mikes_config.use_ust10lx = config_get_intval(cfg, "use_ust10lx", mikes_config.use_ust10lx);
-    mikes_config.use_tim571 = config_get_intval(cfg, "use_rplidar", mikes_config.use_tim571);
-    mikes_config.use_xtion = config_get_intval(cfg, "use_rplidar", mikes_config.use_xtion);
+    mikes_config.use_tim571 = config_get_intval(cfg, "use_tim571", mikes_config.use_tim571);
+    mikes_config.use_xtion = config_get_intval(cfg, "use_xtion", mikes_config.use_xtion);
     mikes_config.use_rfid = config_get_intval(cfg, "use_rfid", mikes_config.use_rfid);
 
-    mikes_config.line_map_file = config_get_strval(cfg, "line_map_file", "file_missing_in_config");
-    mikes_config.xtion_samples_config = config_get_strval(cfg, "xtion_samples_config", "file_missing_in_config");
+    mikes_config.use_tim_hough_transform = config_get_intval(cfg, "use_tim_hough_transform", mikes_config.use_tim_hough_transform);
+    mikes_config.use_line_filter = config_get_intval(cfg, "use_line_filter", mikes_config.use_line_filter);
+    mikes_config.use_tim_segment = config_get_intval(cfg, "use_tim_segment", mikes_config.use_tim_segment);
+
+    mikes_config.line_map_file = config_get_alloc_strval(cfg, "line_map_file", "file_missing_in_config");
+    mikes_config.xtion_samples_config = config_get_alloc_strval(cfg, "xtion_samples_config", "file_missing_in_config");
    
     config_dispose(cfg);
 }

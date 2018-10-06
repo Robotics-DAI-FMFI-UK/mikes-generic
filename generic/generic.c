@@ -38,7 +38,7 @@ void init_modules()
   init_x_tim571(7000, 400);
   init_x_xtion(64, 48, 4, 300);
 
-  init_x_line_map(mikes_config.line_map_file, 600, 600);
+  init_x_line_map(mikes_config.line_map_file, 600, 350);
 }
 
 void shutdown_modules()
