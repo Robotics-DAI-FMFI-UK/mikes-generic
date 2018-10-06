@@ -1,1 +1,7 @@
 mikes-common
+**/*.o
+lastlog
+poses.txt
+bin/generic
+bin/console-control
+
