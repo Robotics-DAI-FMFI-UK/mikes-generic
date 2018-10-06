@@ -6,6 +6,9 @@ bin/console-control:
 bin/generic:
 	$(MAKE) -C generic
 
+bin/sick:
+	$(MAKE) -C sick
+
 clean:
 	$(MAKE) -C console-control clean
 	$(MAKE) -C generic clean
