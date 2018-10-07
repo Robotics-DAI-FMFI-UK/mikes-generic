@@ -44,12 +44,13 @@ static point_2d entry = {
 // ----------------------------------------------------------------
 // ----------------------------------------------------------------
 
-int get_corner_index(corner_data *corner, double heading)
+int get_corner_index(corner_data *corner, double *heading)
 {
   vector_2d corner_vector;
   vector_from_two_points(&entry, &corner->corner, &corner_vector);
   double tim_angle = angle_from_axis_x(&corner_vector);
-  double map_angle = tim571_angle_and_compass_heading_to_map_angle(tim_angle, heading);
+  double map_angle = tim571_angle_and_compass_heading_to_map_angle(tim_angle, *heading);
+  map_angle = get_map_angle(&corner_vector, heading);
   printf("CORNER [%10.4f; %10.4f] HEAD:%10.4f TIM_ANGLE:%10.4f MAP_ANGLE:%10.4f\n", corner->corner.x, corner->corner.y, heading, tim_angle, map_angle);
   if (map_angle < 90 ) return RIGHT_TOP_CORNER;
   if (map_angle < 180) return RIGHT_BOTTOM_CORNER;
@@ -57,11 +58,80 @@ int get_corner_index(corner_data *corner, double heading)
   return LEFT_TOP_CORNER;
 }
 
+void get_left_and_right_line_from_corner(corner_data *corner, angle_line_2d *line_left, angle_line_2d *line_right)
+{
+  if (angle_difference(corner->segment1.line.angle, corner->segment2.line.angle) >= 0.0) {
+    line_left = &corner->segment1.line;
+    line_right = &corner->segment2.line;
+  } else {
+    line_left = &corner->segment2.line;
+    line_right = &corner->segment1.line;
+  }
+}
+
+void get_difference_x_and_y(int *corner, angle_line_2d *line_left, angle_line_2d *line_right, double *difference_x, double *difference_y)
+{
+  switch (*corner) {
+    case RIGHT_TOP_CORNER:
+    case LEFT_BOTTOM_CORNER:
+      *difference_x = line_right->distance;
+      *difference_y = line_left->distance;
+      break;
+    case RIGHT_BOTTOM_CORNER:
+    case LEFT_TOP_CORNER:
+      *difference_x = line_left->distance;
+      *difference_y = line_right->distance;
+      break;
+    default:
+      printf("UNKNOWN CORNER %d\n", *corner)
+      return;
+  }
+  printf("Differenence X %10.4f Difference Y %10.4f\n", *difference_x, *difference_y);
+}
+
+void get_map_x_and_y(int *corner, double *difference_x, double *difference_y, double *x, double *y)
+{
+  switch (*corner) {
+    case RIGHT_TOP_CORNER:
+      *x = SICK_MAP_WITH_IN_MM - *difference_x;
+      *y = SICK_MAP_HEIGHT_IN_MM - *difference_y;
+    case RIGHT_BOTTOM_CORNER:
+      *x = SICK_MAP_WITH_IN_MM - *difference_x;
+      *y = *difference_y;
+      break;
+    case LEFT_BOTTOM_CORNER:
+      *x = *difference_x;
+      *y = *difference_y;
+      break;
+    case LEFT_TOP_CORNER:
+      *x = *difference_x;
+      *y = SICK_MAP_HEIGHT_IN_MM - *difference_y;
+      break;
+    default:
+      printf("UNKNOWN CORNER %d\n", *corner)
+      return;
+  }
+  printf("Position X %10.4f Position Y %10.4f\n", *x, *y);
+}
+
+void get_heading(corner_data *corner, int *corner_index, double* heading)
+{
+  // TODO
+}
+
 int get_pose_base_on_corners_and_heading(corners_data *corners, base_data_type *base_data, pose_type *result_pose)
 {
   for (int c_index = 0; c_index < corners->count; c_index++) {
-    int corner = get_corner_index(&corners->corners[c_index], base_data->heading);
-    // TODO
+    corner_data *corner = &corners->corners[c_index];
+    angle_line_2d *line_left, *line_right;
+    double difference_x, difference_y;
+
+    int corner_index = get_corner_index(corner, &base_data->heading);
+    get_left_and_right_line_from_corner(corner, line_left, line_right);
+    get_difference_x_and_y(&corner_index, line_left, line_right, &difference_x, &difference_y);
+    get_map_x_and_y(&corner_index, &result_pose->x, &result_pose->y);
+    get_heading(corner, &corner_index, &result_pose->heading);
+    // return 1;
   }
   return 0;
 }
