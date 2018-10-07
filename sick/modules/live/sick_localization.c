@@ -15,6 +15,12 @@
 
 #define MAX_SICK_LOCALIZATION_CALLBACKS 20
 
+#define NO_CORNER_FOUND -1
+#define RIGHT_TOP_CORNER 0
+#define RIGHT_BOTTOM_CORNER 1
+#define LEFT_BOTTOM_CORNER 2
+#define LEFT_TOP_CORNER 3
+
 static pthread_mutex_t      sick_localization_lock;
 static int                  fd[2];
 
@@ -28,26 +34,45 @@ static int                                      callbacks_count;
 
 static int online;
 
+static point_2d entry = {
+  .x = 0,
+  .y = 0
+}
+
 // ----------------------------------------------------------------
 // ----------------------------------------------------------------
 // --------------------------LIFECYCLE-----------------------------
 // ----------------------------------------------------------------
 // ----------------------------------------------------------------
 
-void get_pose_base_on_corners_and_heading(corners_data *corners, base_data_type *base_data, pose_type *result_pose)
+int get_corner_index(corner_data *corner, double heading)
 {
-  corner_print_data(corners);
-  printf("%lu: LCNT:%ld RCNT:%ld LVEL:%d RVEL:%d IR:(%d,%d,%d,%d) HEAD:%d ACC:(%d,%d,%d) GYR:(%d,%d,%d)\n",
-         base_data->timestamp, base_data->counterA, base_data->counterB, base_data->velocityA, base_data->velocityB,
-         base_data->dist1, base_data->dist2, base_data->dist3, base_data->cube, base_data->heading,
-         base_data->ax, base_data->ay, base_data->az, base_data->gx, base_data->gy, base_data->gz);
+  vector_2d corner_vector;
+  vector_from_two_points(&entry, &corner->corner, &corner_vector);
+  double tim_angle = angle_from_axis_x(&corner_vector);
+  double map_angle = tim571_angle_and_compass_heading_to_map_angle(tim_angle, heading);
+  printf("HEAD:%5d TIM_ANGLE:%10.4f MAP_ANGLE:%10.4f", heading, tim_angle, map_angle);
+  return NO_CORNER_FOUND; // TODO
+}
+
+int get_pose_base_on_corners_and_heading(corners_data *corners, base_data_type *base_data, pose_type *result_pose)
+{
+  for (int c_index = 0; c_index < corners->count; c_index++) {
+    int corner = get_corner_index(&corners->corners[c_index], base_data->heading);
+    if (corner != NO_CORNER_FOUND) {
+      // TODO
+    }
+  }
+  return 0;
 }
 
 void process_all_data()
 {
-  get_pose_base_on_corners_and_heading(&corners_local_copy, &base_data_local_copy, &pose_localization_local);
-  for (int i = 0; i < callbacks_count; i++)
-    callbacks[i](&pose_localization_local);
+  if (get_pose_base_on_corners_and_heading(&corners_local_copy, &base_data_local_copy, &pose_localization_local)) {
+    for (int i = 0; i < callbacks_count; i++) {
+      callbacks[i](&pose_localization_local);
+    }
+  }
 }
 
 void *sick_localization_thread(void *args)
