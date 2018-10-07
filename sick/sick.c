@@ -22,6 +22,7 @@
 #include "../mikes-common/modules/passive/x_line_map.h"
 
 #include "core/config_mikes.h"
+#include "modules/live/sick_localization.h"
 
 void init_modules()
 {
@@ -30,7 +31,7 @@ void init_modules()
   init_ui();
   init_gui();
 
-  init_lidar();    
+  init_lidar();
   init_ust10lx();
   init_tim571();
   init_tim_hough_transform();
@@ -39,6 +40,8 @@ void init_modules()
   init_tim_corner();
   init_xtion(64, 48);
   init_rfid_sensor();
+
+  init_sick_localization();
 
   init_x_base(400);
   init_x_lidar(7000, 400);
@@ -58,6 +61,8 @@ void shutdown_modules()
   shutdown_x_lidar();
   shutdown_x_base();
 
+  shutdown_sick_localization();
+
   shutdown_gui();
   shutdown_ui();
 }
@@ -66,7 +71,7 @@ int main(int argc, char **argv)
 {
   mikes_init(argc, argv);
   init_modules();
-  
+
   while (program_runs)
   {
      sleep(1);
@@ -76,4 +81,3 @@ int main(int argc, char **argv)
   mikes_shutdown();
   return 0;
 }
-

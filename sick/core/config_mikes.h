@@ -25,6 +25,8 @@ typedef struct {
     double map_azimuth;
     char *line_map_file;
     char *xtion_samples_config;
+
+    int use_sick_localization;
 } mikes_config_t;
 
 extern mikes_config_t mikes_config;
