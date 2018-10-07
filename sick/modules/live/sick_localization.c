@@ -15,7 +15,6 @@
 
 #define MAX_SICK_LOCALIZATION_CALLBACKS 20
 
-#define NO_CORNER_FOUND -1
 #define RIGHT_TOP_CORNER 0
 #define RIGHT_BOTTOM_CORNER 1
 #define LEFT_BOTTOM_CORNER 2
@@ -52,16 +51,17 @@ int get_corner_index(corner_data *corner, double heading)
   double tim_angle = angle_from_axis_x(&corner_vector);
   double map_angle = tim571_angle_and_compass_heading_to_map_angle(tim_angle, heading);
   printf("CORNER [%10.4f; %10.4f] HEAD:%10.4f TIM_ANGLE:%10.4f MAP_ANGLE:%10.4f\n", corner->corner.x, corner->corner.y, heading, tim_angle, map_angle);
-  return NO_CORNER_FOUND; // TODO
+  if (map_angle < 90 ) return RIGHT_TOP_CORNER;
+  if (map_angle < 180) return RIGHT_BOTTOM_CORNER;
+  if (map_angle < 270) return LEFT_BOTTOM_CORNER;
+  return LEFT_TOP_CORNER;
 }
 
 int get_pose_base_on_corners_and_heading(corners_data *corners, base_data_type *base_data, pose_type *result_pose)
 {
   for (int c_index = 0; c_index < corners->count; c_index++) {
     int corner = get_corner_index(&corners->corners[c_index], base_data->heading);
-    if (corner != NO_CORNER_FOUND) {
-      // TODO
-    }
+    // TODO
   }
   return 0;
 }
