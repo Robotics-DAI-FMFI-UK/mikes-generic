@@ -5,6 +5,7 @@
 #include <math.h>
 #include <unistd.h>
 
+#include "sick_localization.h"
 #include "../../../mikes-common/bites/mikes.h"
 #include "../../../mikes-common/bites/util.h"
 #include "../../../mikes-common/modules/passive/mikes_logs.h"
@@ -44,7 +45,7 @@ void get_pose_base_on_corners_and_heading(corners_data *corners, base_data_type 
 
 void process_all_data()
 {
-  get_pose_base_on_corners_and_heading(&corners_local_copy, &pose_local_copy, &pose_localization_local);
+  get_pose_base_on_corners_and_heading(&corners_local_copy, &base_data_local_copy, &pose_localization_local);
   for (int i = 0; i < callbacks_count; i++)
     callbacks[i](&pose_localization_local);
 }
@@ -106,7 +107,7 @@ void init_sick_localization()
   else threads_running_add(1);
 }
 
-void shutdown_tim_hough_transform()
+void shutdown_sick_localization()
 {
   close(fd[0]);
   close(fd[1]);
@@ -118,19 +119,19 @@ void shutdown_tim_hough_transform()
 // ----------------------------------------------------------------
 // ----------------------------------------------------------------
 
-void register_tim_hough_transform_callback(tim_hough_transform_receive_data_callback callback)
+void register_sick_localization_callback(sick_localization_receive_data_callback callback)
 {
   if (!online) return;
 
-  if (callbacks_count >= MAX_TIM_HOUGH_TRANSFORM_CALLBACKS)
+  if (callbacks_count >= MAX_SICK_LOCALIZATION_CALLBACKS)
   {
-     mikes_log(ML_ERR, "too many tim_hough_transform callbacks");
+     mikes_log(ML_ERR, "too many sick_localization callbacks");
      return;
   }
   callbacks[callbacks_count++] = callback;
 }
 
-void unregister_tim_hough_transform_callback(tim_hough_transform_receive_data_callback callback)
+void unregister_sick_localization_callback(sick_localization_receive_data_callback callback)
 {
   if (!online) return;
 

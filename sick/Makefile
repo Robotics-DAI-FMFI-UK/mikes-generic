@@ -33,7 +33,7 @@ SRCS=$(COMMON_DIR)/modules/passive/mikes_logs.c \
      $(COMMON_DIR)/modules/passive/x_line_map.c \
      sick.c \
      core/config_mikes.c \
-     modules/sick_localization.c \
+     modules/live/sick_localization.c \
      ui.c
 
 XTION_SRCS=$(COMMON_DIR)/modules/live/xtion/xtion.cpp
