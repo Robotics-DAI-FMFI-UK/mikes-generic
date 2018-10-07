@@ -37,7 +37,7 @@ static int online;
 static point_2d entry = {
   .x = 0,
   .y = 0
-}
+};
 
 // ----------------------------------------------------------------
 // ----------------------------------------------------------------
@@ -51,7 +51,7 @@ int get_corner_index(corner_data *corner, double heading)
   vector_from_two_points(&entry, &corner->corner, &corner_vector);
   double tim_angle = angle_from_axis_x(&corner_vector);
   double map_angle = tim571_angle_and_compass_heading_to_map_angle(tim_angle, heading);
-  printf("HEAD:%5d TIM_ANGLE:%10.4f MAP_ANGLE:%10.4f", heading, tim_angle, map_angle);
+  printf("CORNER [%10.4f; %10.4f] HEAD:%10.4f TIM_ANGLE:%10.4f MAP_ANGLE:%10.4f\n", corner->corner.x, corner->corner.y, heading, tim_angle, map_angle);
   return NO_CORNER_FOUND; // TODO
 }
 
