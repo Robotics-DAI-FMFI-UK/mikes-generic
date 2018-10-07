@@ -8,6 +8,10 @@
 #include "../mikes-common/modules/live/lidar.h"
 #include "../mikes-common/modules/live/ust10lx.h"
 #include "../mikes-common/modules/live/tim571.h"
+#include "../mikes-common/modules/live/tim_hough_transform.h"
+#include "../mikes-common/modules/live/line_filter.h"
+#include "../mikes-common/modules/live/tim_segment.h"
+#include "../mikes-common/modules/live/tim_corner.h"
 #include "../mikes-common/modules/live/xtion/xtion.h"
 #include "../mikes-common/modules/live/rfid_sensor.h"
 #include "../mikes-common/modules/passive/x_base.h"
@@ -29,6 +33,10 @@ void init_modules()
   init_lidar();    
   init_ust10lx();
   init_tim571();
+  init_tim_hough_transform();
+  init_line_filter();
+  init_tim_segment();
+  init_tim_corner();
   init_xtion(64, 48);
   init_rfid_sensor();
 

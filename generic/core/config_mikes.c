@@ -39,6 +39,7 @@ void load_config()
     mikes_config.use_tim_hough_transform = config_get_intval(cfg, "use_tim_hough_transform", mikes_config.use_tim_hough_transform);
     mikes_config.use_line_filter = config_get_intval(cfg, "use_line_filter", mikes_config.use_line_filter);
     mikes_config.use_tim_segment = config_get_intval(cfg, "use_tim_segment", mikes_config.use_tim_segment);
+    mikes_config.use_tim_corner = config_get_intval(cfg, "use_tim_corner", mikes_config.use_tim_corner);
 
     mikes_config.map_azimuth = config_get_doubleval(cfg, "map_azimuth", mikes_config.map_azimuth);
 

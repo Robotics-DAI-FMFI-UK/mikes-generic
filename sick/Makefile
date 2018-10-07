@@ -20,12 +20,13 @@ SRCS=$(COMMON_DIR)/modules/passive/mikes_logs.c \
      $(COMMON_DIR)/modules/passive/x_tim571.c \
      $(COMMON_DIR)/modules/live/tim_hough_transform.c \
      $(COMMON_DIR)/modules/live/line_filter.c \
+     $(COMMON_DIR)/modules/live/tim_segment.c \
+     $(COMMON_DIR)/modules/live/tim_corner.c \
      $(COMMON_DIR)/bites/hough.c \
      $(COMMON_DIR)/bites/filter.c \
      $(COMMON_DIR)/bites/math_2d.c \
      $(COMMON_DIR)/bites/corner.c \
      $(COMMON_DIR)/bites/segment.c \
-     $(COMMON_DIR)/modules/live/tim_segment.c \
      $(COMMON_DIR)/modules/passive/x_ust10lx.c \
      $(COMMON_DIR)/modules/passive/x_lidar.c \
      $(COMMON_DIR)/modules/passive/x_xtion.c \

@@ -21,6 +21,7 @@ typedef struct {
     int use_tim_hough_transform;
     int use_tim_segment;
     int use_line_filter;
+    int use_tim_corner;
     double map_azimuth;
     char *line_map_file;
     char *xtion_samples_config;
