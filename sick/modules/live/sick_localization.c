@@ -38,6 +38,26 @@ static point_2d entry = {
   .y = 0
 };
 
+static point_2d right_top_corner {
+  .x = SICK_MAP_WITH_IN_MM,
+  .y = SICK_MAP_HEIGHT_IN_MM
+};
+
+static point_2d right_bottom_corner {
+  .x = SICK_MAP_WITH_IN_MM,
+  .y = 0
+};
+
+static point_2d left_bottom_corner {
+  .x = 0,
+  .y = 0
+};
+
+static point_2d left_top_corner {
+  .x = 0,
+  .y = SICK_MAP_HEIGHT_IN_MM
+};
+
 // ----------------------------------------------------------------
 // ----------------------------------------------------------------
 // --------------------------LIFECYCLE-----------------------------
@@ -113,9 +133,37 @@ void get_map_x_and_y(int *corner, double *difference_x, double *difference_y, do
   printf("Position X %10.4f Position Y %10.4f\n", *x, *y);
 }
 
-void get_heading(corner_data *corner, int *corner_index, double* heading)
+void get_heading(corner_data *corner, int *corner_index, double *x, double *y, double* heading)
 {
-  // TODO
+  point_2d robot_p;
+  robot_p.x = *x;
+  robot_p.y = *y;
+
+  vector_2d corner_v;
+  switch (*corner_index) {
+    case RIGHT_TOP_CORNER:
+      vector_from_two_points(&robot_p, &right_top_corner, &corner_v);
+      break;
+    case RIGHT_BOTTOM_CORNER:
+      vector_from_two_points(&robot_p, &right_bottom_corner, &corner_v);
+      break;
+    case LEFT_BOTTOM_CORNER:
+      vector_from_two_points(&robot_p, &left_bottom_corner, &corner_v);
+      break;
+    case LEFT_TOP_CORNER:
+      vector_from_two_points(&robot_p, &left_top_corner, &corner_v);
+      break;
+    default:
+      printf("UNKNOWN CORNER %d\n", *corner);
+      return;
+  }
+  double map_corner_angle = math_azimuth_to_robot_azimuth(angle_from_axis_x(&corner_v));
+
+  vector_2d corner_tim_v;
+  vector_from_two_points(&entry, &corner->corner, &corner_tim_v);
+  double robot_angle_to_corner = math_azimuth_to_robot_azimuth(angle_from_axis_x(&corner_tim_v));
+
+  *heading = map_corner_angle - robot_angle_to_corner;
 }
 
 int get_pose_base_on_corners_and_heading(corners_data *corners, base_data_type *base_data, pose_type *result_pose)
@@ -129,7 +177,7 @@ int get_pose_base_on_corners_and_heading(corners_data *corners, base_data_type *
     get_left_and_right_line_from_corner(corner, &line_left, &line_right);
     get_difference_x_and_y(&corner_index, &line_left, &line_right, &difference_x, &difference_y);
     get_map_x_and_y(&corner_index, &difference_x, &difference_y, &result_pose->x, &result_pose->y);
-    get_heading(corner, &corner_index, &result_pose->heading);
+    get_heading(corner, &corner_index, &result_pose->x, &result_pose->y, &result_pose->heading);
     return 1;
   }
   return 0;
