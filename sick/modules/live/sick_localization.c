@@ -164,6 +164,7 @@ void get_heading(corner_data *corner, int *corner_index, double *x, double *y, d
   double robot_angle_to_corner = math_azimuth_to_robot_azimuth(angle_from_axis_x(&corner_tim_v));
 
   *heading = map_corner_angle - robot_angle_to_corner;
+  printf("Computed Robot HEADING %10.4f\n", *heading);
 }
 
 int get_pose_base_on_corners_and_heading(corners_data *corners, base_data_type *base_data, pose_type *result_pose)
