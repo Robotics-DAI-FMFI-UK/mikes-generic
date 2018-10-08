@@ -1,8 +1,8 @@
 #ifndef _SICK_LOCALIZATION_H_
 #define _SICK_LOCALIZATION_H_
 
-#define SICK_MAP_WITH_IN_MM 6000
-#define SICK_MAP_HEIGHT_IN_MM 3500
+#define SICK_MAP_WITH_IN_MM 5800
+#define SICK_MAP_HEIGHT_IN_MM 3270
 
 #include "../../../mikes-common/modules/passive/pose.h"
 

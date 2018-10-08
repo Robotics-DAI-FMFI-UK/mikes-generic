@@ -38,22 +38,22 @@ static point_2d entry = {
   .y = 0
 };
 
-static point_2d right_top_corner {
+static point_2d right_top_corner = {
   .x = SICK_MAP_WITH_IN_MM,
   .y = SICK_MAP_HEIGHT_IN_MM
 };
 
-static point_2d right_bottom_corner {
+static point_2d right_bottom_corner = {
   .x = SICK_MAP_WITH_IN_MM,
   .y = 0
 };
 
-static point_2d left_bottom_corner {
+static point_2d left_bottom_corner = {
   .x = 0,
   .y = 0
 };
 
-static point_2d left_top_corner {
+static point_2d left_top_corner = {
   .x = 0,
   .y = SICK_MAP_HEIGHT_IN_MM
 };
@@ -70,7 +70,6 @@ int get_corner_index(corner_data *corner, double heading)
   vector_from_two_points(&entry, &corner->corner, &corner_vector);
   double tim_angle = angle_from_axis_x(&corner_vector);
   double map_angle = tim571_angle_and_compass_heading_to_map_angle(tim_angle, heading);
-  printf("CORNER [%10.4f; %10.4f] HEAD:%10.4f TIM_ANGLE:%10.4f MAP_ANGLE:%10.4f\n", corner->corner.x, corner->corner.y, heading, tim_angle, map_angle);
   if (map_angle < 90 ) return RIGHT_TOP_CORNER;
   if (map_angle < 180) return RIGHT_BOTTOM_CORNER;
   if (map_angle < 270) return LEFT_BOTTOM_CORNER;
@@ -79,7 +78,7 @@ int get_corner_index(corner_data *corner, double heading)
 
 void get_left_and_right_line_from_corner(corner_data *corner, angle_line_2d *line_left, angle_line_2d *line_right)
 {
-  if (angle_difference(corner->segment1.line.angle, corner->segment2.line.angle) >= 0.0) {
+  if (angle_difference(corner->segment1.line.angle, corner->segment2.line.angle) < 0.0) {
     *line_left = corner->segment1.line;
     *line_right = corner->segment2.line;
   } else {
@@ -105,7 +104,6 @@ void get_difference_x_and_y(int *corner, angle_line_2d *line_left, angle_line_2d
       printf("UNKNOWN CORNER %d\n", *corner);
       return;
   }
-  printf("Differenence X %10.4f Difference Y %10.4f\n", *difference_x, *difference_y);
 }
 
 void get_map_x_and_y(int *corner, double *difference_x, double *difference_y, double *x, double *y)
@@ -114,6 +112,7 @@ void get_map_x_and_y(int *corner, double *difference_x, double *difference_y, do
     case RIGHT_TOP_CORNER:
       *x = SICK_MAP_WITH_IN_MM - *difference_x;
       *y = SICK_MAP_HEIGHT_IN_MM - *difference_y;
+      break;
     case RIGHT_BOTTOM_CORNER:
       *x = SICK_MAP_WITH_IN_MM - *difference_x;
       *y = *difference_y;
@@ -130,7 +129,6 @@ void get_map_x_and_y(int *corner, double *difference_x, double *difference_y, do
       printf("UNKNOWN CORNER %d\n", *corner);
       return;
   }
-  printf("Position X %10.4f Position Y %10.4f\n", *x, *y);
 }
 
 void get_heading(corner_data *corner, int *corner_index, double *x, double *y, double* heading)
@@ -154,7 +152,7 @@ void get_heading(corner_data *corner, int *corner_index, double *x, double *y, d
       vector_from_two_points(&robot_p, &left_top_corner, &corner_v);
       break;
     default:
-      printf("UNKNOWN CORNER %d\n", *corner);
+      printf("UNKNOWN CORNER %d\n", *corner_index);
       return;
   }
   double map_corner_angle = math_azimuth_to_robot_azimuth(angle_from_axis_x(&corner_v));
@@ -163,8 +161,7 @@ void get_heading(corner_data *corner, int *corner_index, double *x, double *y, d
   vector_from_two_points(&entry, &corner->corner, &corner_tim_v);
   double robot_angle_to_corner = math_azimuth_to_robot_azimuth(angle_from_axis_x(&corner_tim_v));
 
-  *heading = map_corner_angle - robot_angle_to_corner;
-  printf("Computed Robot HEADING %10.4f\n", *heading);
+  *heading = (map_corner_angle - robot_angle_to_corner) / RADIAN;
 }
 
 int get_pose_base_on_corners_and_heading(corners_data *corners, base_data_type *base_data, pose_type *result_pose)
@@ -175,13 +172,11 @@ int get_pose_base_on_corners_and_heading(corners_data *corners, base_data_type *
     double difference_x, difference_y;
 
     int corner_index = get_corner_index(corner, base_data->heading);
-    printf("Corner index %d\n", corner_index);
     get_left_and_right_line_from_corner(corner, &line_left, &line_right);
     get_difference_x_and_y(&corner_index, &line_left, &line_right, &difference_x, &difference_y);
     get_map_x_and_y(&corner_index, &difference_x, &difference_y, &result_pose->x, &result_pose->y);
     get_heading(corner, &corner_index, &result_pose->x, &result_pose->y, &result_pose->heading);
     if (result_pose->x > 0 && result_pose->x < SICK_MAP_WITH_IN_MM && result_pose->y > 0  && result_pose->y < SICK_MAP_HEIGHT_IN_MM) {
-      x_line_map_set_pose(*result_pose);
       return 1;
     }
   }

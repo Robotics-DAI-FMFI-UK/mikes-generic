@@ -24,20 +24,26 @@
 #include "core/config_mikes.h"
 #include "modules/live/sick_localization.h"
 
+static int was_set = 0;
+
 void update_sick_localization(pose_type *pose)
 {
+  if (!was_set) {
+    x_line_map_toggle_pose_visible(1);
+    was_set = 1;
+  }
   pose_type copy_p;
-  copy_p->x = pose->x / 10.0;
-  copy_p->y = pose->y / 10.0;
-  copy_p->heading = pose->heading;
-  x_line_map_set_pose(pose);
+  copy_p.x = pose->x / 10.0 + 11;
+  copy_p.y = pose->y / 10.0 + 11;
+  copy_p.heading = pose->heading;
+  x_line_map_set_pose(copy_p);
 }
 
 void init_modules()
 {
   init_base_module();
-  // init_ncurses_control();
-  // init_ui();
+  init_ncurses_control();
+  init_ui();
   init_gui();
 
   init_lidar();
@@ -60,7 +66,7 @@ void init_modules()
 
   init_x_line_map(mikes_config.line_map_file, 600, 350);
 
-  register_sick_localization_callback();
+  register_sick_localization_callback(update_sick_localization);
 }
 
 void shutdown_modules()
@@ -75,7 +81,7 @@ void shutdown_modules()
   shutdown_sick_localization();
 
   shutdown_gui();
-  // shutdown_ui();
+  shutdown_ui();
 }
 
 int main(int argc, char **argv)

@@ -10,8 +10,6 @@ mikes_config_t mikes_config;
 
 void load_config()
 {
-    printf("load_config()\n");
-
     config_data cfg = read_config(MIKES_CONFIG);
     if (cfg == 0)
     {
