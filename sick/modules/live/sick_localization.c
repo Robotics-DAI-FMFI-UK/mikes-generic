@@ -174,11 +174,15 @@ int get_pose_base_on_corners_and_heading(corners_data *corners, base_data_type *
     double difference_x, difference_y;
 
     int corner_index = get_corner_index(corner, base_data->heading);
+    printf("Corner index %d\n", corner_index);
     get_left_and_right_line_from_corner(corner, &line_left, &line_right);
     get_difference_x_and_y(&corner_index, &line_left, &line_right, &difference_x, &difference_y);
     get_map_x_and_y(&corner_index, &difference_x, &difference_y, &result_pose->x, &result_pose->y);
     get_heading(corner, &corner_index, &result_pose->x, &result_pose->y, &result_pose->heading);
-    return 1;
+    if (result_pose->x > 0 && result_pose->x < SICK_MAP_WITH_IN_MM && result_pose->y > 0  && result_pose->y < SICK_MAP_HEIGHT_IN_MM) {
+      x_line_map_set_pose(*result_pose);
+      return 1;
+    }
   }
   return 0;
 }
