@@ -15,6 +15,10 @@
 #include "../../../mikes-common/modules/live/navig.h"
 #include "../../../mikes-common/modules/passive/actuator.h"
 
+#define SICK_STRATEGY_WAITING_POINT_X 3000.0
+#define SICK_STRATEGY_WAITING_POINT_Y 3000.0
+#define SICK_STRATEGY_WAITING_POINT_HEADING 300.0
+
 #define MAX_SICK_STRATEGY_CALLBACKS 20
 
 static pthread_mutex_t      sick_strategy_lock;
@@ -60,6 +64,9 @@ void process_next_step()
   // TODO
   switch (current_state.current) {
     case SICK_STRATEGY_STATE_INITIAL:
+      set_new_current_state(SICK_STRATEGY_STATE_MOVING_TO_CART);
+      send_current_state();
+      navig_cmd_goto_point(SICK_STRATEGY_WAITING_POINT_X, SICK_STRATEGY_WAITING_POINT_Y, SICK_STRATEGY_WAITING_POINT_HEADING);
       break;
     case SICK_STRATEGY_STATE_BLOCKED:
       break;
