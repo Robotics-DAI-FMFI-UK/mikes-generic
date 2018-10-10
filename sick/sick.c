@@ -14,12 +14,16 @@
 #include "../mikes-common/modules/live/tim_corner.h"
 #include "../mikes-common/modules/live/xtion/xtion.h"
 #include "../mikes-common/modules/live/rfid_sensor.h"
+#include "../mikes-common/modules/live/avoid.h"
+#include "../mikes-common/modules/live/navig.h"
 #include "../mikes-common/modules/passive/x_base.h"
 #include "../mikes-common/modules/passive/x_lidar.h"
 #include "../mikes-common/modules/passive/x_ust10lx.h"
 #include "../mikes-common/modules/passive/x_tim571.h"
 #include "../mikes-common/modules/passive/x_xtion.h"
 #include "../mikes-common/modules/passive/x_line_map.h"
+#include "../mikes-common/modules/passive/x_line_map.h"
+#include "../mikes-common/modules/passive/actuator.h"
 
 #include "core/config_mikes.h"
 #include "modules/live/sick_localization.h"
@@ -43,6 +47,9 @@ void init_modules()
   init_tim_corner();
   init_xtion(64, 48);
   init_rfid_sensor();
+  init_avoid();
+  init_navig();
+  init_actuator();
 
   init_sick_localization();
 
@@ -75,6 +82,9 @@ void shutdown_modules()
   shutdown_x_base();
 
   shutdown_sick_localization();
+
+  shutdown_avoid();
+  shutdown_navig();
 
   shutdown_gui();
   shutdown_ui();

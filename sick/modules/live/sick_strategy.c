@@ -10,6 +10,11 @@
 #include "../../../mikes-common/modules/passive/mikes_logs.h"
 #include "core/config_mikes.h"
 
+#include "sick_cart_align.h"
+#include "../../../mikes-common/modules/live/avoid.h"
+#include "../../../mikes-common/modules/live/navig.h"
+#include "../../../mikes-common/modules/passive/actuator.h"
+
 #define MAX_SICK_STRATEGY_CALLBACKS 20
 
 static pthread_mutex_t      sick_strategy_lock;
@@ -21,6 +26,21 @@ static sick_localization_receive_data_callback  callbacks[MAX_SICK_STRATEGY_CALL
 static int                                      callbacks_count;
 
 static int online;
+
+void update_sick_cart_align_callback(sick_cart_align_t *result)
+{
+  // TODO
+}
+
+void update_avoid_callback(avoid_callback_data_t *data)
+{
+  // TODO
+}
+
+void update_navig_callback(navig_callback_data_t *data)
+{
+  // TODO
+}
 
 void set_new_current_state(uint8_t new_state)
 {
@@ -112,6 +132,9 @@ void init_sick_strategy()
 
   pthread_t t;
   pthread_mutex_init(&sick_strategy_lock, 0);
+  register_sick_cart_align_callback(update_sick_cart_align_callback);
+  avoid_register_callback(update_avoid_callback);
+  navig_register_callback(update_navig_callback);
   if (pthread_create(&t, 0, sick_strategy_thread, 0) != 0)
   {
     perror("mikes:sick_strategy");
