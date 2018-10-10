@@ -27,6 +27,8 @@ typedef struct {
     char *xtion_samples_config;
 
     int use_sick_localization;
+    int use_sick_cart_align;
+    int use_sick_strategy;
 } mikes_config_t;
 
 extern mikes_config_t mikes_config;

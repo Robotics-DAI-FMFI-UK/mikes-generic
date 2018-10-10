@@ -22,6 +22,8 @@ SRCS=$(COMMON_DIR)/modules/passive/mikes_logs.c \
      $(COMMON_DIR)/modules/live/line_filter.c \
      $(COMMON_DIR)/modules/live/tim_segment.c \
      $(COMMON_DIR)/modules/live/tim_corner.c \
+     $(COMMON_DIR)/modules/live/avoid.c \
+     $(COMMON_DIR)/modules/live/navig.c \
      $(COMMON_DIR)/bites/hough.c \
      $(COMMON_DIR)/bites/filter.c \
      $(COMMON_DIR)/bites/math_2d.c \
@@ -31,9 +33,13 @@ SRCS=$(COMMON_DIR)/modules/passive/mikes_logs.c \
      $(COMMON_DIR)/modules/passive/x_lidar.c \
      $(COMMON_DIR)/modules/passive/x_xtion.c \
      $(COMMON_DIR)/modules/passive/x_line_map.c \
+     $(COMMON_DIR)/modules/passive/actuator.c \
      sick.c \
      core/config_mikes.c \
+     modules/live/sick_cart_align.c \
      modules/live/sick_localization.c \
+     modules/live/sick_strategy.c \
+     modules/passive/sick_map_localize.c \
      ui.c
 
 XTION_SRCS=$(COMMON_DIR)/modules/live/xtion/xtion.cpp
