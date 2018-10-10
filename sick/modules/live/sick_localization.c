@@ -251,6 +251,8 @@ void init_sick_localization()
 
 void shutdown_sick_localization()
 {
+  online = 0;
+
   close(fd[0]);
   close(fd[1]);
 }
@@ -280,7 +282,6 @@ void unregister_sick_localization_callback(sick_localization_receive_data_callba
   for (int i = 0; i < callbacks_count; i++) {
     if (callbacks[i] == callback) {
        callbacks[i] = callbacks[(callbacks_count--) - 1];
-
     }
   }
 }

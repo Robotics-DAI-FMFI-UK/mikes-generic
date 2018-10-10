@@ -23,6 +23,8 @@
 
 #include "core/config_mikes.h"
 #include "modules/live/sick_localization.h"
+#include "modules/live/sick_cart_align.h"
+#include "modules/live/sick_strategy.h"
 
 static int was_set = 0;
 
@@ -67,10 +69,16 @@ void init_modules()
   init_x_line_map(mikes_config.line_map_file, 600, 350);
 
   register_sick_localization_callback(update_sick_localization);
+
+  init_sick_cart_align();
+  init_sick_strategy();
 }
 
 void shutdown_modules()
 {
+  shutdown_sick_strategy();
+  shutdown_sick_cart_align();
+
   shutdown_x_line_map();
   shutdown_x_xtion();
   shutdown_x_tim571();
