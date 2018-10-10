@@ -45,6 +45,8 @@ void load_config()
     mikes_config.xtion_samples_config = config_get_alloc_strval(cfg, "xtion_samples_config", "file_missing_in_config");
 
     mikes_config.use_sick_localization = config_get_intval(cfg, "use_sick_localization", mikes_config.use_sick_localization);
-    
+    mikes_config.use_sick_cart_align = config_get_intval(cfg, "use_sick_cart_align", mikes_config.use_sick_cart_align);
+    mikes_config.use_sick_strategy = config_get_intval(cfg, "use_sick_strategy", mikes_config.use_sick_strategy);
+
     config_dispose(cfg);
 }

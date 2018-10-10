@@ -25,21 +25,7 @@
 #include "modules/live/sick_localization.h"
 #include "modules/live/sick_cart_align.h"
 #include "modules/live/sick_strategy.h"
-
-static int was_set = 0;
-
-void update_sick_localization(pose_type *pose)
-{
-  if (!was_set) {
-    x_line_map_toggle_pose_visible(1);
-    was_set = 1;
-  }
-  pose_type copy_p;
-  copy_p.x = pose->x / 10.0 + 11;
-  copy_p.y = pose->y / 10.0 + 11;
-  copy_p.heading = pose->heading;
-  x_line_map_set_pose(copy_p);
-}
+#include "modules/passive/sick_map_localize.h"
 
 void init_modules()
 {
@@ -68,7 +54,7 @@ void init_modules()
 
   init_x_line_map(mikes_config.line_map_file, 600, 350);
 
-  register_sick_localization_callback(update_sick_localization);
+  init_sick_map_localize();
 
   init_sick_cart_align();
   init_sick_strategy();
@@ -78,6 +64,8 @@ void shutdown_modules()
 {
   shutdown_sick_strategy();
   shutdown_sick_cart_align();
+
+  shutdown_sick_map_localize();
 
   shutdown_x_line_map();
   shutdown_x_xtion();

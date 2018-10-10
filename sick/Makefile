@@ -36,6 +36,7 @@ SRCS=$(COMMON_DIR)/modules/passive/mikes_logs.c \
      modules/live/sick_cart_align.c \
      modules/live/sick_localization.c \
      modules/live/sick_strategy.c \
+     modules/passive/sick_map_localize.c \
      ui.c
 
 XTION_SRCS=$(COMMON_DIR)/modules/live/xtion/xtion.cpp
