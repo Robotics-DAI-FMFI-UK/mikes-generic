@@ -24,7 +24,9 @@
 static pthread_mutex_t      sick_strategy_lock;
 static int                  fd[2];
 
-static sick_strategy_t current_state;
+static navig_callback_data_t  navig_result;
+
+static sick_strategy_t        current_state;
 
 static sick_strategy_receive_data_callback  callbacks[MAX_SICK_STRATEGY_CALLBACKS];
 static int                                  callbacks_count;
@@ -43,34 +45,57 @@ void update_avoid_callback(avoid_callback_data_t *data)
 
 void update_navig_callback(navig_callback_data_t *data)
 {
-  // TODO
+  sick_strategy_t copy_current_state;
+  create_copy_of_current_state(&copy_current_state);
+
+  if (copy_current_state.current == SICK_STRATEGY_STATE_MOVING_TO_CART) {
+    switch (data->navig_result) {
+      case NAVIG_RESULT_OK:
+      case NAVIG_RESULT_FAILED:
+        pthread_mutex_lock(&sick_strategy_lock);
+        navig_result = *data;
+        pthread_mutex_unlock(&sick_strategy_lock);
+        alert_new_data(fd);
+        break;
+      case NAVIG_RESULT_WAIT:
+        break;
+    }
+  }
 }
 
-void set_new_current_state(uint8_t new_state)
+void create_copy_of_current_state(sick_strategy_t *copy)
 {
+  pthread_mutex_lock(&sick_strategy_lock);
+  *copy = current_state;
+  pthread_mutex_unlock(&sick_strategy_lock);
+}
+
+void set_and_send_new_current_state(uint8_t new_state)
+{
+  pthread_mutex_lock(&sick_strategy_lock);
   current_state.old = current_state.current;
   current_state.current = new_state;
-}
-
-void send_current_state()
-{
   for (int i = 0; i < callbacks_count; i++) {
     callbacks[i](&current_state);
   }
+  pthread_mutex_unlock(&sick_strategy_lock);
 }
 
 void process_next_step()
 {
+  sick_strategy_t copy_current_state;
+  create_copy_of_current_state(&copy_current_state);
+
   // TODO
-  switch (current_state.current) {
+  switch (copy_current_state.current) {
     case SICK_STRATEGY_STATE_INITIAL:
-      set_new_current_state(SICK_STRATEGY_STATE_MOVING_TO_CART);
-      send_current_state();
+      set_and_send_new_current_state(SICK_STRATEGY_STATE_MOVING_TO_CART);
       navig_cmd_goto_point(SICK_STRATEGY_WAITING_POINT_X, SICK_STRATEGY_WAITING_POINT_Y, SICK_STRATEGY_WAITING_POINT_HEADING);
       break;
     case SICK_STRATEGY_STATE_BLOCKED:
       break;
     case SICK_STRATEGY_STATE_MOVING_TO_CART:
+      // TODO
       break;
     case SICK_STRATEGY_STATE_WAITING_CART:
       break;
@@ -86,8 +111,6 @@ void process_next_step()
       printf("Unknown sick strategy step %d\n", current_state.current);
       return;
   }
-
-  send_current_state();
 }
 
 void *sick_strategy_thread(void *args)
@@ -99,9 +122,7 @@ void *sick_strategy_thread(void *args)
     if (was_read_error) {
       was_read_error = 0;
     } else {
-      pthread_mutex_lock(&sick_strategy_lock);
       process_next_step();
-      pthread_mutex_unlock(&sick_strategy_lock);
     }
 
     if (wait_for_new_data(fd) < 0) {
