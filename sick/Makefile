@@ -24,6 +24,7 @@ SRCS=$(COMMON_DIR)/modules/passive/mikes_logs.c \
      $(COMMON_DIR)/modules/live/tim_corner.c \
      $(COMMON_DIR)/modules/live/avoid.c \
      $(COMMON_DIR)/modules/live/navig.c \
+     $(COMMON_DIR)/modules/live/nxt.c \
      $(COMMON_DIR)/bites/hough.c \
      $(COMMON_DIR)/bites/filter.c \
      $(COMMON_DIR)/bites/math_2d.c \
@@ -34,6 +35,7 @@ SRCS=$(COMMON_DIR)/modules/passive/mikes_logs.c \
      $(COMMON_DIR)/modules/passive/x_xtion.c \
      $(COMMON_DIR)/modules/passive/x_line_map.c \
      $(COMMON_DIR)/modules/passive/actuator.c \
+     $(COMMON_DIR)/modules/passive/wheels.c \
      sick.c \
      core/config_mikes.c \
      modules/live/sick_cart_align.c \

@@ -22,8 +22,8 @@ static int                  fd[2];
 
 static sick_strategy_t current_state;
 
-static sick_localization_receive_data_callback  callbacks[MAX_SICK_STRATEGY_CALLBACKS];
-static int                                      callbacks_count;
+static sick_strategy_receive_data_callback  callbacks[MAX_SICK_STRATEGY_CALLBACKS];
+static int                                  callbacks_count;
 
 static int online;
 
@@ -63,11 +63,9 @@ void process_next_step()
       break;
     case SICK_STRATEGY_STATE_BLOCKED:
       break;
-    case SICK_STRATEGY_STATE_MOVING_TO_CAR:
+    case SICK_STRATEGY_STATE_MOVING_TO_CART:
       break;
-    case SICK_STRATEGY_STATE_MOVING_TO_CAR:
-      break;
-    case SICK_STRATEGY_STATE_WAITING_CAR:
+    case SICK_STRATEGY_STATE_WAITING_CART:
       break;
     case SICK_STRATEGY_STATE_ALIGN:
       break;
@@ -78,7 +76,7 @@ void process_next_step()
     case SICK_STRATEGY_STATE_RELEASING:
       break;
     default:
-      printf("Unknown sick strategy step %d\n", current_state.state);
+      printf("Unknown sick strategy step %d\n", current_state.current);
       return;
   }
 
@@ -87,7 +85,7 @@ void process_next_step()
 
 void *sick_strategy_thread(void *args)
 {
-  uint8_t was_read_error = 0
+  uint8_t was_read_error = 0;
 
   while (program_runs)
   {

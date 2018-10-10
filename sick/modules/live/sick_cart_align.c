@@ -15,6 +15,8 @@
 static pthread_mutex_t      sick_cart_align_lock;
 static int                  fd[2];
 
+sick_cart_align_t           result;
+
 static sick_cart_align_receive_data_callback  callbacks[MAX_SICK_CART_ALIGN_CALLBACKS];
 static int                                    callbacks_count;
 
@@ -27,7 +29,6 @@ uint8_t process_align_cart()
 
 void process_new_request()
 {
-  sick_strategy_t result;
   result.status = process_align_cart();
   for (int i = 0; i < callbacks_count; i++) {
     callbacks[i](&result);

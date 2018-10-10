@@ -37,7 +37,6 @@ void init_modules()
   init_ncurses_control();
   init_ui();
   init_gui();
-
   init_lidar();
   init_ust10lx();
   init_tim571();
@@ -51,8 +50,6 @@ void init_modules()
   init_navig();
   init_actuator();
 
-  init_sick_localization();
-
   init_x_base(400);
   init_x_lidar(7000, 400);
   init_x_ust10lx(7000, 400);
@@ -61,8 +58,8 @@ void init_modules()
 
   init_x_line_map(mikes_config.line_map_file, 600, 350);
 
+  init_sick_localization();
   init_sick_map_localize();
-
   init_sick_cart_align();
   init_sick_strategy();
 }
@@ -71,8 +68,8 @@ void shutdown_modules()
 {
   shutdown_sick_strategy();
   shutdown_sick_cart_align();
-
   shutdown_sick_map_localize();
+  shutdown_sick_localization();
 
   shutdown_x_line_map();
   shutdown_x_xtion();
@@ -80,8 +77,6 @@ void shutdown_modules()
   shutdown_x_ust10lx();
   shutdown_x_lidar();
   shutdown_x_base();
-
-  shutdown_sick_localization();
 
   shutdown_avoid();
   shutdown_navig();
