@@ -9,8 +9,10 @@
 #include "../../../mikes-common/bites/mikes.h"
 #include "../../../mikes-common/bites/util.h"
 #include "../../../mikes-common/modules/passive/mikes_logs.h"
+#include "../../../mikes-common/modules/live/tim_hough_transform.h"
 #include "../../../mikes-common/modules/live/tim_corner.h"
 #include "../../../mikes-common/modules/live/base_module.h"
+#include "../../../mikes-common/modules/live/navig.h"
 #include "core/config_mikes.h"
 
 #define MAX_SICK_LOCALIZATION_CALLBACKS 20
@@ -214,12 +216,17 @@ void *sick_localization_thread(void *args)
 
 void tim_corner_new_data(corners_data *corners)
 {
-  if (pthread_mutex_trylock(&sick_localization_lock) == 0) 
+  if (pthread_mutex_trylock(&sick_localization_lock) == 0)
   {
     corners_local_copy = *corners;
     alert_new_data(fd);
     pthread_mutex_unlock(&sick_localization_lock);
   }
+}
+
+void navig_actualize_pose_function()
+{
+  tim_hough_transform_do_compute_once();
 }
 
 void init_sick_localization()
@@ -231,6 +238,8 @@ void init_sick_localization()
     return;
   }
   online = 1;
+
+  tim_hough_transform_set_mode(TIM_HOUGH_TRANSFORM_MODE_SINGLE);
 
   if (pipe(fd) != 0)
   {

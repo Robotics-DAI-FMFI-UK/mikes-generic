@@ -89,7 +89,7 @@ void shutdown_sick_cart_align()
   close(fd[1]);
 }
 
-void align_robot_to_cart(long timeout)
+void align_robot_to_cart()
 {
   if (!online) return;
 

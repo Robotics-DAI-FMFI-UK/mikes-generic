@@ -16,7 +16,7 @@ typedef void (*sick_cart_align_receive_data_callback)(sick_cart_align_t *result)
 void init_sick_cart_align();
 void shutdown_sick_cart_align();
 
-void align_robot_to_cart(long timeout);
+void align_robot_to_cart();
 
 void register_sick_cart_align_callback(sick_cart_align_receive_data_callback callback);
 void unregister_sick_cart_align_callback(sick_cart_align_receive_data_callback callback);
