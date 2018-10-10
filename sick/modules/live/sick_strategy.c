@@ -15,29 +15,76 @@
 static pthread_mutex_t      sick_strategy_lock;
 static int                  fd[2];
 
+static sick_strategy_t current_state;
+
 static sick_localization_receive_data_callback  callbacks[MAX_SICK_STRATEGY_CALLBACKS];
 static int                                      callbacks_count;
 
 static int online;
 
+void set_new_current_state(uint8_t new_state)
+{
+  current_state.old = current_state.current;
+  current_state.current = new_state;
+}
+
+void send_current_state()
+{
+  for (int i = 0; i < callbacks_count; i++) {
+    callbacks[i](&current_state);
+  }
+}
+
 void process_next_step()
 {
   // TODO
+  switch (current_state.current) {
+    case SICK_STRATEGY_STATE_INITIAL:
+      break;
+    case SICK_STRATEGY_STATE_BLOCKED:
+      break;
+    case SICK_STRATEGY_STATE_MOVING_TO_CAR:
+      break;
+    case SICK_STRATEGY_STATE_MOVING_TO_CAR:
+      break;
+    case SICK_STRATEGY_STATE_WAITING_CAR:
+      break;
+    case SICK_STRATEGY_STATE_ALIGN:
+      break;
+    case SICK_STRATEGY_STATE_GRABBING:
+      break;
+    case SICK_STRATEGY_STATE_RETURNING:
+      break;
+    case SICK_STRATEGY_STATE_RELEASING:
+      break;
+    default:
+      printf("Unknown sick strategy step %d\n", current_state.state);
+      return;
+  }
+
+  send_current_state();
 }
 
 void *sick_strategy_thread(void *args)
 {
+  uint8_t was_read_error = 0
+
   while (program_runs)
   {
-    // TODO make some switch on state instead maybe
+    if (was_read_error) {
+      was_read_error = 0;
+    } else {
+      pthread_mutex_lock(&sick_strategy_lock);
+      process_next_step();
+      pthread_mutex_unlock(&sick_strategy_lock);
+    }
+
     if (wait_for_new_data(fd) < 0) {
+      was_read_error = 1;
       perror("mikes:sick_strategy");
       mikes_log(ML_ERR, "sick_strategy error during waiting on new Data.");
       continue;
     }
-    pthread_mutex_lock(&sick_strategy_lock);
-    process_next_step();
-    pthread_mutex_unlock(&sick_strategy_lock);
   }
 
   mikes_log(ML_INFO, "sick_strategy quits.");
@@ -54,6 +101,7 @@ void init_sick_strategy()
     return;
   }
   online = 1;
+  current_state.current = SICK_STRATEGY_STATE_INITIAL;
 
   if (pipe(fd) != 0)
   {

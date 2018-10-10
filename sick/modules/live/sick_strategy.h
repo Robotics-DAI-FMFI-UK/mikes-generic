@@ -13,7 +13,8 @@
 #define SICK_STRATEGY_STATE_RELEASING 7
 
 typedef struct {
-    uint8_t state;
+    uint8_t current;
+    uint8_t old;
 } sick_strategy_t;
 
 typedef void (*sick_strategy_receive_data_callback)(sick_strategy_t *state);
