@@ -5,25 +5,20 @@
 #include "../mikes-common/modules/live/ncurses_control.h"
 #include "ui.h"
 #include "../mikes-common/modules/live/gui.h"
-#include "../mikes-common/modules/live/lidar.h"
-#include "../mikes-common/modules/live/ust10lx.h"
 #include "../mikes-common/modules/live/tim571.h"
 #include "../mikes-common/modules/live/tim_hough_transform.h"
 #include "../mikes-common/modules/live/line_filter.h"
 #include "../mikes-common/modules/live/tim_segment.h"
 #include "../mikes-common/modules/live/tim_corner.h"
-#include "../mikes-common/modules/live/xtion/xtion.h"
-#include "../mikes-common/modules/live/rfid_sensor.h"
+//#include "../mikes-common/modules/live/xtion/xtion.h"
 #include "../mikes-common/modules/live/avoid.h"
 #include "../mikes-common/modules/live/navig.h"
 #include "../mikes-common/modules/passive/x_base.h"
-#include "../mikes-common/modules/passive/x_lidar.h"
-#include "../mikes-common/modules/passive/x_ust10lx.h"
 #include "../mikes-common/modules/passive/x_tim571.h"
-#include "../mikes-common/modules/passive/x_xtion.h"
-#include "../mikes-common/modules/passive/x_line_map.h"
+//#include "../mikes-common/modules/passive/x_xtion.h"
 #include "../mikes-common/modules/passive/x_line_map.h"
 #include "../mikes-common/modules/passive/actuator.h"
+#include "../mikes-common/modules/live/nxt.h"
 
 #include "core/config_mikes.h"
 #include "modules/live/sick_localization.h"
@@ -37,24 +32,21 @@ void init_modules()
   init_ncurses_control();
   init_ui();
   init_gui();
-  init_lidar();
-  init_ust10lx();
   init_tim571();
   init_tim_hough_transform();
   init_line_filter();
   init_tim_segment();
   init_tim_corner();
-  init_xtion(64, 48);
-  init_rfid_sensor();
+  //init_xtion(64, 48);
   init_avoid();
   init_navig();
+  init_nxt();
+  init_wheels();
   init_actuator();
 
   init_x_base(400);
-  init_x_lidar(7000, 400);
-  init_x_ust10lx(7000, 400);
   init_x_tim571(7000, 400);
-  init_x_xtion(64, 48, 4, 300);
+  //init_x_xtion(64, 48, 4, 300);
 
   init_x_line_map(mikes_config.line_map_file, 600, 350);
 
@@ -72,17 +64,26 @@ void shutdown_modules()
   shutdown_sick_localization();
 
   shutdown_x_line_map();
-  shutdown_x_xtion();
+  //shutdown_x_xtion();
   shutdown_x_tim571();
-  shutdown_x_ust10lx();
-  shutdown_x_lidar();
   shutdown_x_base();
 
+  shutdown_nxt();
   shutdown_avoid();
   shutdown_navig();
 
   shutdown_gui();
   shutdown_ui();
+}
+
+void sick_main_menu()
+{
+  nxt_message("Mikes menu");
+  nxt_message("[ENTER] run");
+  nxt_message("[<] quit");
+  int key = nxt_read_key();
+  if (key == NXT_KEY_ENTER) start_game();
+  else if (key == NXT_KEY_LEFT) program_runs = 0;
 }
 
 int main(int argc, char **argv)
@@ -92,6 +93,7 @@ int main(int argc, char **argv)
 
   while (program_runs)
   {
+     sick_main_menu();
      sleep(1);
   }
 

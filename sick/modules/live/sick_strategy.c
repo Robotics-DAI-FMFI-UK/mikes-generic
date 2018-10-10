@@ -14,12 +14,15 @@
 #include "../../../mikes-common/modules/live/avoid.h"
 #include "../../../mikes-common/modules/live/navig.h"
 #include "../../../mikes-common/modules/passive/actuator.h"
+#include "../../../mikes-common/modules/live/nxt.h"
 
 #define SICK_STRATEGY_WAITING_POINT_X 3000.0
-#define SICK_STRATEGY_WAITING_POINT_Y 3000.0
+#define SICK_STRATEGY_WAITING_POINT_Y 2500.0
 #define SICK_STRATEGY_WAITING_POINT_HEADING 300.0
 
 #define MAX_SICK_STRATEGY_CALLBACKS 20
+
+#define GAME_DURATION_MSEC (10*60*1000)
 
 static pthread_mutex_t      sick_strategy_lock;
 static int                  fd[2];
@@ -33,9 +36,30 @@ static int                                  callbacks_count;
 
 static int online;
 
+static long long time_game_started;
+
+void create_copy_of_current_state(sick_strategy_t *copy)
+{
+  pthread_mutex_lock(&sick_strategy_lock);
+  *copy = current_state;
+  pthread_mutex_unlock(&sick_strategy_lock);
+}
+
 void update_sick_cart_align_callback(sick_cart_align_t *result)
 {
-  // TODO
+  if (current_state.current == SICK_STRATEGY_STATE_ALIGN) 
+  {
+    if (result->status == SICK_CART_ALIGN_SUCCESS)
+    {
+       set_and_send_new_current_state(SICK_STRATEGY_STATE_GRABBING);
+       alert_new_data(fd);
+    }
+    else 
+    {
+       set_and_send_new_current_state(SICK_STRATEGY_STATE_NOT_LOADED_ESCAPE);
+       alert_new_data(fd);
+    }
+  }
 }
 
 void update_avoid_callback(avoid_callback_data_t *data)
@@ -45,29 +69,20 @@ void update_avoid_callback(avoid_callback_data_t *data)
 
 void update_navig_callback(navig_callback_data_t *data)
 {
-  sick_strategy_t copy_current_state;
-  create_copy_of_current_state(&copy_current_state);
-
-  if (copy_current_state.current == SICK_STRATEGY_STATE_MOVING_TO_CART) {
+  if (current_state.current == SICK_STRATEGY_STATE_MOVING_TO_CART) {
     switch (data->navig_result) {
       case NAVIG_RESULT_OK:
+       set_and_send_new_current_state(SICK_STRATEGY_STATE_ALIGN);
+       align_robot_to_cart();
       case NAVIG_RESULT_FAILED:
         pthread_mutex_lock(&sick_strategy_lock);
         navig_result = *data;
         pthread_mutex_unlock(&sick_strategy_lock);
-        alert_new_data(fd);
         break;
       case NAVIG_RESULT_WAIT:
         break;
     }
   }
-}
-
-void create_copy_of_current_state(sick_strategy_t *copy)
-{
-  pthread_mutex_lock(&sick_strategy_lock);
-  *copy = current_state;
-  pthread_mutex_unlock(&sick_strategy_lock);
 }
 
 void set_and_send_new_current_state(uint8_t new_state)
@@ -83,26 +98,26 @@ void set_and_send_new_current_state(uint8_t new_state)
 
 void process_next_step()
 {
-  sick_strategy_t copy_current_state;
-  create_copy_of_current_state(&copy_current_state);
+  switch (current_state.current) {
+    case SICK_STRATEGY_STATE_GRABBING:
+      grab_line(1);
+      grab_line(2);
+      grab_line(3);
 
-  // TODO
-  switch (copy_current_state.current) {
-    case SICK_STRATEGY_STATE_INITIAL:
+      set_and_send_new_current_state(SICK_STRATEGY_STATE_LOADED_ESCAPE);
+      break;
+    case SICK_STRATEGY_STATE_NOT_LOADED_ESCAPE:
+      escape_now_and_quick();
       set_and_send_new_current_state(SICK_STRATEGY_STATE_MOVING_TO_CART);
       navig_cmd_goto_point(SICK_STRATEGY_WAITING_POINT_X, SICK_STRATEGY_WAITING_POINT_Y, SICK_STRATEGY_WAITING_POINT_HEADING);
       break;
-    case SICK_STRATEGY_STATE_BLOCKED:
+    case SICK_STRATEGY_STATE_LOADED_ESCAPE:
+      escape_now_and_quick();
+      set_and_send_new_current_state(SICK_STRATEGY_STATE_RETURNING);
+      navig_cmd_goto_point(SICK_STRATEGY_WAITING_POINT_X, SICK_STRATEGY_WAITING_POINT_Y, SICK_STRATEGY_WAITING_POINT_HEADING);
       break;
-    case SICK_STRATEGY_STATE_MOVING_TO_CART:
-      // TODO
-      break;
-    case SICK_STRATEGY_STATE_WAITING_CART:
-      break;
-    case SICK_STRATEGY_STATE_ALIGN:
-      break;
+
     case SICK_STRATEGY_STATE_GRABBING:
-      break;
     case SICK_STRATEGY_STATE_RETURNING:
       break;
     case SICK_STRATEGY_STATE_RELEASING:
@@ -115,22 +130,19 @@ void process_next_step()
 
 void *sick_strategy_thread(void *args)
 {
-  uint8_t was_read_error = 0;
-
   while (program_runs)
   {
-    if (was_read_error) {
-      was_read_error = 0;
-    } else {
-      process_next_step();
-    }
 
     if (wait_for_new_data(fd) < 0) {
-      was_read_error = 1;
       perror("mikes:sick_strategy");
       mikes_log(ML_ERR, "sick_strategy error during waiting on new Data.");
       continue;
     }
+
+    if (game_timeout()) 
+       set_and_send_new_current_state(SICK_STRATEGY_STATE_STANDBY);
+
+    process_next_step();
   }
 
   mikes_log(ML_INFO, "sick_strategy quits.");
@@ -147,7 +159,7 @@ void init_sick_strategy()
     return;
   }
   online = 1;
-  current_state.current = SICK_STRATEGY_STATE_INITIAL;
+  current_state.current = SICK_STRATEGY_STATE_STANDBY;
 
   if (pipe(fd) != 0)
   {
@@ -198,4 +210,20 @@ void unregister_sick_strategy_callback(sick_strategy_receive_data_callback callb
        callbacks[i] = callbacks[(callbacks_count--) - 1];
     }
   }
+}
+
+void start_game()
+{
+  if (current_state.current == SICK_STRATEGY_STATE_STANDBY)
+  {
+    set_and_send_new_current_state(SICK_STRATEGY_STATE_MOVING_TO_CART);
+    navig_cmd_goto_point(SICK_STRATEGY_WAITING_POINT_X, SICK_STRATEGY_WAITING_POINT_Y, SICK_STRATEGY_WAITING_POINT_HEADING);
+    say("Let's go!");
+    time_game_started = msec();
+  }
+}
+
+int game_timeout()
+{ 
+  return msec() - time_game_started > GAME_DURATION_MSEC;
 }
