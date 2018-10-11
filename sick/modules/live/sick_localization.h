@@ -1,13 +1,15 @@
 #ifndef _SICK_LOCALIZATION_H_
 #define _SICK_LOCALIZATION_H_
 
+#include <stdint.h>
+
+#include "../../../mikes-common/modules/passive/pose.h"
+
 #define SICK_MAP_WITH_IN_MM 5800
 #define SICK_MAP_HEIGHT_IN_MM 3270
 
 #define SICK_LOCALIZATION_FAIL    0
 #define SICK_LOCALIZATION_SUCCESS 1
-
-#include "../../../mikes-common/modules/passive/pose.h"
 
 typedef struct {
     uint8_t status;

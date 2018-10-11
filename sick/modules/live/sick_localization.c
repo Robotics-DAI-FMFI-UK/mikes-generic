@@ -187,7 +187,7 @@ int get_pose_base_on_corners_and_heading(corners_data *corners, base_data_type *
 
 void process_all_data()
 {
-  localization_data_local.status = get_pose_base_on_corners_and_heading(&corners_local_copy, &base_data_local_copy, &localization_data_local.pose));
+  localization_data_local.status = get_pose_base_on_corners_and_heading(&corners_local_copy, &base_data_local_copy, &localization_data_local.pose);
   for (int i = 0; i < callbacks_count; i++) {
     callbacks[i](&localization_data_local);
   }
