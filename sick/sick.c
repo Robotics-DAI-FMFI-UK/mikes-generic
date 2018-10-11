@@ -91,9 +91,12 @@ int main(int argc, char **argv)
   mikes_init(argc, argv);
   init_modules();
 
+  sleep(3);
+  start_game();
+
   while (program_runs)
   {
-     sick_main_menu();
+     // sick_main_menu();
      sleep(1);
   }
 
