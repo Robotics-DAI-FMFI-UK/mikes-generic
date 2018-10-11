@@ -12,7 +12,9 @@
 
 #include "../live/sick_localization.h"
 
-#define WAIT_INITIAL_FIND_POSITION 3
+#define WAIT_BASE_DATA 2
+#define WAIT_INITIAL_FIND_POSITION 2
+
 #define SML_LOGSTR_LEN 1024
 
 static int was_pose_set_visible = 0;
@@ -89,6 +91,9 @@ void use_config_initial_localization()
 
 void find_starting_localization()
 {
+  tim_hough_transform_set_mode(TIM_HOUGH_TRANSFORM_MODE_SINGLE);
+  sleep(WAIT_BASE_DATA);
+
   is_finding_initial_pose = 1;
   tim_hough_transform_set_mode(TIM_HOUGH_TRANSFORM_MODE_CONTINUOUS);
   sleep(WAIT_INITIAL_FIND_POSITION);
