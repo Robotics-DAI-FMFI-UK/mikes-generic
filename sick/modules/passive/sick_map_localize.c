@@ -14,6 +14,7 @@ void update_sick_localization(pose_type *pose)
   copy_p.x = pose->x / 10.0 + 11;
   copy_p.y = pose->y / 10.0 + 11;
   copy_p.heading = pose->heading;
+  set_pose(copy_p.x, copy_p.y, copy_p.heading);
   x_line_map_set_pose(copy_p);
 }
 

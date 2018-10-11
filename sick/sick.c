@@ -18,6 +18,7 @@
 //#include "../mikes-common/modules/passive/x_xtion.h"
 #include "../mikes-common/modules/passive/x_line_map.h"
 #include "../mikes-common/modules/passive/actuator.h"
+#include "../mikes-common/modules/passive/wheels.h"
 #include "../mikes-common/modules/live/nxt.h"
 
 #include "core/config_mikes.h"
@@ -29,6 +30,7 @@
 void init_modules()
 {
   init_base_module();
+  set_motor_speeds(0, 0);
   init_ncurses_control();
   init_ui();
   init_gui();
@@ -66,6 +68,7 @@ void shutdown_modules()
   shutdown_x_line_map();
   //shutdown_x_xtion();
   shutdown_x_tim571();
+  set_motor_speeds(0, 0);
   shutdown_x_base();
 
   shutdown_nxt();

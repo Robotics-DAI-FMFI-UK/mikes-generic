@@ -7,6 +7,7 @@
 #include "sick_strategy.h"
 #include "../../../mikes-common/bites/mikes.h"
 #include "../../../mikes-common/bites/util.h"
+#include "../../../mikes-common/bites/math_2d.h"
 #include "../../../mikes-common/modules/passive/mikes_logs.h"
 #include "core/config_mikes.h"
 
@@ -19,11 +20,11 @@
 
 #define SICK_STRATEGY_WAITING_POINT_X 300.0 // TODO in CM
 #define SICK_STRATEGY_WAITING_POINT_Y 250.0 // TODO in CM
-#define SICK_STRATEGY_WAITING_POINT_HEADING 300.0 // TODO
+#define SICK_STRATEGY_WAITING_POINT_HEADING 300.0 * RADIAN// TODO
 
 #define SICK_STRATEGY_RETURNING_POINT_X 550.0 // TODO in CM
 #define SICK_STRATEGY_RETURNING_POINT_Y 170.0 // TODO in CM
-#define SICK_STRATEGY_RETURNING_POINT_HEADING 270.0 // TODO
+#define SICK_STRATEGY_RETURNING_POINT_HEADING 270.0 * RADIAN// TODO
 
 #define MAX_SICK_STRATEGY_CALLBACKS 20
 
