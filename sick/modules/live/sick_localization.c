@@ -224,7 +224,7 @@ void tim_corner_new_data(corners_data *corners)
   }
 }
 
-void navig_actualize_pose_function()
+void request_actualize_pose()
 {
   tim_hough_transform_do_compute_once();
 }
@@ -240,6 +240,7 @@ void init_sick_localization()
   online = 1;
 
   tim_hough_transform_set_mode(TIM_HOUGH_TRANSFORM_MODE_SINGLE);
+  navig_register_actualize_pose_function(request_actualize_pose);
 
   if (pipe(fd) != 0)
   {
