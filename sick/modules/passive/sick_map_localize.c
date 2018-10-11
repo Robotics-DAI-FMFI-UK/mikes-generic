@@ -3,6 +3,7 @@
 #include "../../../mikes-common/modules/passive/x_line_map.h"
 #include "../../../mikes-common/modules/passive/pose.h"
 #include "../../../mikes-common/modules/live/base_module.h"
+#include "../../../mikes-common/modules/live/navig.h"
 
 #include "../live/sick_localization.h"
 

@@ -232,9 +232,9 @@ void request_actualize_pose(int cmd)
       break;
     case NAVIG_STOP_LOCALIZE:
       tim_hough_transform_set_mode(TIM_HOUGH_TRANSFORM_MODE_SINGLE);
-      break
+      break;
     default:
-      perror("mikes:sick_localization unknown cmd %d\n", cmd);
+      printf("mikes:sick_localization unknown cmd %d\n", cmd);
       break;
   }
 }
