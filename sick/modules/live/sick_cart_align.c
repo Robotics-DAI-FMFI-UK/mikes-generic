@@ -24,7 +24,7 @@ static int online;
 
 uint8_t process_align_cart()
 {
-  return SICK_CART_ALIGN_FAIL;
+  return SICK_CART_ALIGN_SUCCESS;
 }
 
 void process_new_request()

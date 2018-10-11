@@ -163,7 +163,7 @@ void get_heading(corner_data *corner, int *corner_index, double *x, double *y, d
   vector_from_two_points(&entry, &corner->corner, &corner_tim_v);
   double robot_angle_to_corner = math_azimuth_to_robot_azimuth(angle_from_axis_x(&corner_tim_v));
 
-  *heading = (map_corner_angle - robot_angle_to_corner) * RADIAN;
+  *heading = normAlpha(map_corner_angle - robot_angle_to_corner) * RADIAN;
 }
 
 int get_pose_base_on_corners_and_heading(corners_data *corners, base_data_type *base_data, pose_type *result_pose)

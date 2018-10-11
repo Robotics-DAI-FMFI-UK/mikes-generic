@@ -1,3 +1,4 @@
+#include <math.h>
 #include <pthread.h>
 #include <stdio.h>
 #include <string.h>
@@ -7,7 +8,6 @@
 #include "sick_strategy.h"
 #include "../../../mikes-common/bites/mikes.h"
 #include "../../../mikes-common/bites/util.h"
-#include "../../../mikes-common/bites/math_2d.h"
 #include "../../../mikes-common/modules/passive/mikes_logs.h"
 #include "core/config_mikes.h"
 
@@ -18,13 +18,13 @@
 #include "../../../mikes-common/modules/live/nxt.h"
 #include "../../../mikes-common/modules/passive/actuator.h"
 
-#define SICK_STRATEGY_WAITING_POINT_X 300.0 // TODO in CM
-#define SICK_STRATEGY_WAITING_POINT_Y 250.0 // TODO in CM
-#define SICK_STRATEGY_WAITING_POINT_HEADING 300.0 * RADIAN// TODO
+#define SICK_STRATEGY_WAITING_POINT_X 300.0
+#define SICK_STRATEGY_WAITING_POINT_Y 250.0
+#define SICK_STRATEGY_WAITING_POINT_HEADING (300.0 * M_PI / 180)
 
-#define SICK_STRATEGY_RETURNING_POINT_X 550.0 // TODO in CM
-#define SICK_STRATEGY_RETURNING_POINT_Y 170.0 // TODO in CM
-#define SICK_STRATEGY_RETURNING_POINT_HEADING 270.0 * RADIAN// TODO
+#define SICK_STRATEGY_RETURNING_POINT_X 530.0
+#define SICK_STRATEGY_RETURNING_POINT_Y 170.0
+#define SICK_STRATEGY_RETURNING_POINT_HEADING (270.0 * M_PI / 180)
 
 #define MAX_SICK_STRATEGY_CALLBACKS 20
 
@@ -42,6 +42,28 @@ static int online;
 
 static long long time_game_started;
 
+#define SICK_STRATEGY_LOGSTR_LEN   1024
+             
+static char *sick_strategy_state_str[SICK_STRATEGY_STATE__COUNT] = 
+    { "STANDBY", "BLOCKED", "MOVING_TO_CART", "WAITING_CART", "ALIGN", 
+      "GRABBING", "LOADED_ESCAPE", "NOT_LOADED_ESCAPE", "RETURNING", "RELEASING" };
+
+void sick_strategy_log_state(int state, int state_old)
+{
+    char str[SICK_STRATEGY_LOGSTR_LEN];
+
+    /* log only state changes */
+    if (state == state_old) return;
+
+    if ((state < 0) || (state >= SICK_STRATEGY_STATE__COUNT)) state = 0;
+    if ((state_old < 0) || (state_old >= SICK_STRATEGY_STATE__COUNT)) state_old = 0;
+
+    sprintf(str, "[sick_strategy] sick_strategy::sick_strategy_log_state(): state=\"%s\", state_old=\"%s\"", 
+        sick_strategy_state_str[state], sick_strategy_state_str[state_old]);
+
+    mikes_log(ML_DEBUG, str);
+}
+
 void create_copy_of_current_state(sick_strategy_t *copy)
 {
   pthread_mutex_lock(&sick_strategy_lock);
@@ -57,7 +79,10 @@ void set_and_send_new_current_state(uint8_t new_state)
   for (int i = 0; i < callbacks_count; i++) {
     callbacks[i](&current_state);
   }
+  uint8_t state = current_state.current;
+  uint8_t state_old = current_state.old;
   pthread_mutex_unlock(&sick_strategy_lock);
+  sick_strategy_log_state(state, state_old);
 }
 
 void update_sick_cart_align_callback(sick_cart_align_t *result)
@@ -115,9 +140,9 @@ void process_next_step()
 {
   switch (current_state.current) {
     case SICK_STRATEGY_STATE_GRABBING:
-      grab_line(1);
-      grab_line(2);
-      grab_line(3);
+//      grab_line(1);
+//      grab_line(2);
+//      grab_line(3);
 
       set_and_send_new_current_state(SICK_STRATEGY_STATE_LOADED_ESCAPE);
       alert_new_data(fd);
