@@ -8,6 +8,7 @@
 #include "../../../mikes-common/modules/passive/pose.h"
 #include "../../../mikes-common/modules/live/base_module.h"
 #include "../../../mikes-common/modules/live/navig.h"
+#include "../../../mikes-common/modules/live/tim_hough_transform.h"
 
 #include "../live/sick_localization.h"
 
