@@ -12,13 +12,18 @@
 
 #include "sick_cart_align.h"
 #include "../../../mikes-common/modules/live/avoid.h"
+#include "../../../mikes-common/modules/live/base_module.h"
 #include "../../../mikes-common/modules/live/navig.h"
-#include "../../../mikes-common/modules/passive/actuator.h"
 #include "../../../mikes-common/modules/live/nxt.h"
+#include "../../../mikes-common/modules/passive/actuator.h"
 
-#define SICK_STRATEGY_WAITING_POINT_X 3000.0
-#define SICK_STRATEGY_WAITING_POINT_Y 2500.0
-#define SICK_STRATEGY_WAITING_POINT_HEADING 300.0
+#define SICK_STRATEGY_WAITING_POINT_X 3000.0 // TODO
+#define SICK_STRATEGY_WAITING_POINT_Y 2500.0 // TODO
+#define SICK_STRATEGY_WAITING_POINT_HEADING 300.0 // TODO
+
+#define SICK_STRATEGY_RETURNING_POINT_X 5500.0 // TODO
+#define SICK_STRATEGY_RETURNING_POINT_Y 1700.0 // TODO
+#define SICK_STRATEGY_RETURNING_POINT_HEADING 270.0 // TODO
 
 #define MAX_SICK_STRATEGY_CALLBACKS 20
 
@@ -26,8 +31,6 @@
 
 static pthread_mutex_t      sick_strategy_lock;
 static int                  fd[2];
-
-static navig_callback_data_t  navig_result;
 
 static sick_strategy_t        current_state;
 
@@ -47,14 +50,14 @@ void create_copy_of_current_state(sick_strategy_t *copy)
 
 void update_sick_cart_align_callback(sick_cart_align_t *result)
 {
-  if (current_state.current == SICK_STRATEGY_STATE_ALIGN) 
+  if (current_state.current == SICK_STRATEGY_STATE_ALIGN)
   {
     if (result->status == SICK_CART_ALIGN_SUCCESS)
     {
        set_and_send_new_current_state(SICK_STRATEGY_STATE_GRABBING);
        alert_new_data(fd);
     }
-    else 
+    else
     {
        set_and_send_new_current_state(SICK_STRATEGY_STATE_NOT_LOADED_ESCAPE);
        alert_new_data(fd);
@@ -72,12 +75,23 @@ void update_navig_callback(navig_callback_data_t *data)
   if (current_state.current == SICK_STRATEGY_STATE_MOVING_TO_CART) {
     switch (data->navig_result) {
       case NAVIG_RESULT_OK:
-       set_and_send_new_current_state(SICK_STRATEGY_STATE_ALIGN);
-       align_robot_to_cart();
+        set_and_send_new_current_state(SICK_STRATEGY_STATE_ALIGN);
+        align_robot_to_cart();
+        break;
       case NAVIG_RESULT_FAILED:
-        pthread_mutex_lock(&sick_strategy_lock);
-        navig_result = *data;
-        pthread_mutex_unlock(&sick_strategy_lock);
+        // TODO do smth
+        break;
+      case NAVIG_RESULT_WAIT:
+        break;
+    }
+  } else if (current_state.current == SICK_STRATEGY_STATE_RETURNING) {
+    switch (data->navig_result) {
+      case NAVIG_RESULT_OK:
+        set_and_send_new_current_state(SICK_STRATEGY_STATE_RELEASING);
+        alert_new_data(fd);
+        break;
+      case NAVIG_RESULT_FAILED:
+        // TODO do smth
         break;
       case NAVIG_RESULT_WAIT:
         break;
@@ -105,25 +119,31 @@ void process_next_step()
       grab_line(3);
 
       set_and_send_new_current_state(SICK_STRATEGY_STATE_LOADED_ESCAPE);
+      alert_new_data(fd);
       break;
     case SICK_STRATEGY_STATE_NOT_LOADED_ESCAPE:
       escape_now_and_quick();
+
       set_and_send_new_current_state(SICK_STRATEGY_STATE_MOVING_TO_CART);
       navig_cmd_goto_point(SICK_STRATEGY_WAITING_POINT_X, SICK_STRATEGY_WAITING_POINT_Y, SICK_STRATEGY_WAITING_POINT_HEADING);
       break;
     case SICK_STRATEGY_STATE_LOADED_ESCAPE:
       escape_now_and_quick();
-      set_and_send_new_current_state(SICK_STRATEGY_STATE_RETURNING);
-      navig_cmd_goto_point(SICK_STRATEGY_WAITING_POINT_X, SICK_STRATEGY_WAITING_POINT_Y, SICK_STRATEGY_WAITING_POINT_HEADING);
-      break;
 
-    case SICK_STRATEGY_STATE_GRABBING:
-    case SICK_STRATEGY_STATE_RETURNING:
+      set_and_send_new_current_state(SICK_STRATEGY_STATE_RETURNING);
+      navig_cmd_goto_point(SICK_STRATEGY_RETURNING_POINT_X, SICK_STRATEGY_RETURNING_POINT_Y, SICK_STRATEGY_RETURNING_POINT_HEADING);
       break;
     case SICK_STRATEGY_STATE_RELEASING:
+      unload_cargo();
+
+      set_and_send_new_current_state(SICK_STRATEGY_STATE_MOVING_TO_CART);
+      navig_cmd_goto_point(SICK_STRATEGY_WAITING_POINT_X, SICK_STRATEGY_WAITING_POINT_Y, SICK_STRATEGY_WAITING_POINT_HEADING);
+      break;
+    case SICK_STRATEGY_STATE_STANDBY:
+      // TODO maybe can do smth hre, atleast log
       break;
     default:
-      printf("Unknown sick strategy step %d\n", current_state.current);
+      printf("Process next step with not defined behavior %d\n", current_state.current);
       return;
   }
 }
@@ -132,14 +152,13 @@ void *sick_strategy_thread(void *args)
 {
   while (program_runs)
   {
-
     if (wait_for_new_data(fd) < 0) {
       perror("mikes:sick_strategy");
       mikes_log(ML_ERR, "sick_strategy error during waiting on new Data.");
       continue;
     }
 
-    if (game_timeout()) 
+    if (game_timeout())
        set_and_send_new_current_state(SICK_STRATEGY_STATE_STANDBY);
 
     process_next_step();
@@ -224,6 +243,6 @@ void start_game()
 }
 
 int game_timeout()
-{ 
+{
   return msec() - time_game_started > GAME_DURATION_MSEC;
 }
