@@ -4,9 +4,17 @@
 #define SICK_MAP_WITH_IN_MM 5800
 #define SICK_MAP_HEIGHT_IN_MM 3270
 
+#define SICK_LOCALIZATION_FAIL    0
+#define SICK_LOCALIZATION_SUCCESS 1
+
 #include "../../../mikes-common/modules/passive/pose.h"
 
-typedef void (*sick_localization_receive_data_callback)(pose_type *pose);
+typedef struct {
+    uint8_t status;
+    pose_type pose;
+} sick_localization_t;
+
+typedef void (*sick_localization_receive_data_callback)(sick_localization_t *result);
 
 void init_sick_localization();
 void shutdown_sick_localization();

@@ -28,7 +28,7 @@ static int                  fd[2];
 static corners_data         corners_local_copy;
 static base_data_type       base_data_local_copy;
 
-static pose_type            pose_localization_local;
+static sick_localization_t  localization_data_local;
 
 static sick_localization_receive_data_callback  callbacks[MAX_SICK_LOCALIZATION_CALLBACKS];
 static int                                      callbacks_count;
@@ -179,18 +179,17 @@ int get_pose_base_on_corners_and_heading(corners_data *corners, base_data_type *
     get_map_x_and_y(&corner_index, &difference_x, &difference_y, &result_pose->x, &result_pose->y);
     get_heading(corner, &corner_index, &result_pose->x, &result_pose->y, &result_pose->heading);
     if (result_pose->x > 0 && result_pose->x < SICK_MAP_WITH_IN_MM && result_pose->y > 0  && result_pose->y < SICK_MAP_HEIGHT_IN_MM) {
-      return 1;
+      return SICK_LOCALIZATION_SUCCESS;
     }
   }
-  return 0;
+  return SICK_LOCALIZATION_FAIL;
 }
 
 void process_all_data()
 {
-  if (get_pose_base_on_corners_and_heading(&corners_local_copy, &base_data_local_copy, &pose_localization_local)) {
-    for (int i = 0; i < callbacks_count; i++) {
-      callbacks[i](&pose_localization_local);
-    }
+  localization_data_local.status = get_pose_base_on_corners_and_heading(&corners_local_copy, &base_data_local_copy, &localization_data_local.pose));
+  for (int i = 0; i < callbacks_count; i++) {
+    callbacks[i](&localization_data_local);
   }
 }
 
