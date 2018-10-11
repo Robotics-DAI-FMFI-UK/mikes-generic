@@ -48,6 +48,17 @@ void create_copy_of_current_state(sick_strategy_t *copy)
   pthread_mutex_unlock(&sick_strategy_lock);
 }
 
+void set_and_send_new_current_state(uint8_t new_state)
+{
+  pthread_mutex_lock(&sick_strategy_lock);
+  current_state.old = current_state.current;
+  current_state.current = new_state;
+  for (int i = 0; i < callbacks_count; i++) {
+    callbacks[i](&current_state);
+  }
+  pthread_mutex_unlock(&sick_strategy_lock);
+}
+
 void update_sick_cart_align_callback(sick_cart_align_t *result)
 {
   if (current_state.current == SICK_STRATEGY_STATE_ALIGN)
@@ -97,17 +108,6 @@ void update_navig_callback(navig_callback_data_t *data)
         break;
     }
   }
-}
-
-void set_and_send_new_current_state(uint8_t new_state)
-{
-  pthread_mutex_lock(&sick_strategy_lock);
-  current_state.old = current_state.current;
-  current_state.current = new_state;
-  for (int i = 0; i < callbacks_count; i++) {
-    callbacks[i](&current_state);
-  }
-  pthread_mutex_unlock(&sick_strategy_lock);
 }
 
 void process_next_step()
