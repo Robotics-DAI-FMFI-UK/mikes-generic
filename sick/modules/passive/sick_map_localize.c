@@ -1,5 +1,9 @@
+#include <unistd.h>
 #include <stdio.h>
+
+#include "core/config_mikes.h"
 #include "../../../mikes-common/modules/passive/mikes_logs.h"
+
 #include "../../../mikes-common/modules/passive/x_line_map.h"
 #include "../../../mikes-common/modules/passive/pose.h"
 #include "../../../mikes-common/modules/live/base_module.h"
@@ -7,20 +11,22 @@
 
 #include "../live/sick_localization.h"
 
-static int was_set = 0;
-
+#define WAIT_INITIAL_FIND_POSITION 3
 #define SML_LOGSTR_LEN 1024
+
+static int was_pose_set_visible = 0;
+static int is_finding_initial_pose = 0;
+
+int can_update_pose()
+{
+  return is_finding_initial_pose || navig_can_actualize_pose_now();
+}
 
 void update_sick_localization(pose_type *pose)
 {
-  if (!was_set) {
-    x_line_map_toggle_pose_visible(1);
-    was_set = 1;
-  }
-
   pose_type copy_p;
-  copy_p.x = pose->x / 10.0 + 11;
-  copy_p.y = pose->y / 10.0 + 11;
+  copy_p.x = pose->x / 10.0;
+  copy_p.y = pose->y / 10.0;
   copy_p.heading = pose->heading;
 
   pose_type old_p;
@@ -31,8 +37,11 @@ void update_sick_localization(pose_type *pose)
 
   char str[SML_LOGSTR_LEN];
 
-  if (navig_can_actualize_pose_now()) {
-    x_line_map_set_pose(copy_p);
+  if (can_update_pose()) {
+    if (!was_pose_set_visible) {
+      x_line_map_toggle_pose_visible(1);
+      was_pose_set_visible = 1;
+    }
     set_pose(copy_p.x, copy_p.y, copy_p.heading);
 
     sprintf(str, "[main] sick_map_localize::update_sick_localization_updated(): x=%0.2f, y=%0.2f, heading_deg=%0.2f, old_x=%0.2f, old_y=%0.2f, old_heading_deg=%0.2f, base_heading=%d",
@@ -49,7 +58,9 @@ void update_base_data(base_data_type *data)
 {
   pose_type p;
   get_pose(&p);
-//  x_line_map_set_pose(p);
+  p.x = p.x + 11;
+  p.y = p.y + 11;
+  x_line_map_set_pose(p);
 }
 
 void init_sick_map_localize()
@@ -62,4 +73,24 @@ void shutdown_sick_map_localize()
 {
   unregister_sick_localization_callback(update_sick_localization);
   unregister_base_callback(update_base_data);
+}
+
+void use_config_initial_localization()
+{
+  set_pose(mikes_config.localization_base_x, mikes_config.localization_base_y, mikes_config.localization_base_heading * M_PI / 180.0);
+
+  pose_type initial_x_line_pose;
+  initial_x_line_pose.x = mikes_config.localization_base_x + 11;
+  initial_x_line_pose.y = mikes_config.localization_base_y + 11;
+  initial_x_line_pose.heading = mikes_config.localization_base_heading * M_PI / 180.0;
+  x_line_map_set_pose(initial_x_line_pose);
+}
+
+void find_starting_localization()
+{
+  is_finding_initial_pose = 1;
+  tim_hough_transform_set_mode(TIM_HOUGH_TRANSFORM_MODE_CONTINUOUS);
+  sleep(WAIT_INITIAL_FIND_POSITION);
+  tim_hough_transform_set_mode(TIM_HOUGH_TRANSFORM_MODE_SINGLE);
+  is_finding_initial_pose = 0;
 }
