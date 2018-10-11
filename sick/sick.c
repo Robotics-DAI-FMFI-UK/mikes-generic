@@ -96,7 +96,6 @@ int main(int argc, char **argv)
   mikes_init(argc, argv);
   init_modules();
 
-  use_config_initial_localization();
   find_starting_localization();
 
   start_game();

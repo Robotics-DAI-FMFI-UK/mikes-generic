@@ -17,7 +17,6 @@
 
 #define SML_LOGSTR_LEN 1024
 
-static int was_pose_set_visible = 0;
 static int is_finding_initial_pose = 0;
 
 int can_update_pose()
@@ -41,10 +40,6 @@ void update_sick_localization(pose_type *pose)
   char str[SML_LOGSTR_LEN];
 
   if (can_update_pose()) {
-    if (!was_pose_set_visible) {
-      x_line_map_toggle_pose_visible(1);
-      was_pose_set_visible = 1;
-    }
     set_pose(copy_p.x, copy_p.y, copy_p.heading);
 
     sprintf(str, "[main] sick_map_localize::update_sick_localization_updated(): x=%0.2f, y=%0.2f, heading_deg=%0.2f, old_x=%0.2f, old_y=%0.2f, old_heading_deg=%0.2f, base_heading=%d",
@@ -66,8 +61,21 @@ void update_base_data(base_data_type *data)
   x_line_map_set_pose(p);
 }
 
+void use_config_initial_localization()
+{
+  x_line_map_toggle_pose_visible(1);
+  set_pose(mikes_config.localization_base_x, mikes_config.localization_base_y, mikes_config.localization_base_heading * M_PI / 180.0);
+
+  pose_type initial_x_line_pose;
+  initial_x_line_pose.x = mikes_config.localization_base_x + 11;
+  initial_x_line_pose.y = mikes_config.localization_base_y + 11;
+  initial_x_line_pose.heading = mikes_config.localization_base_heading * M_PI / 180.0;
+  x_line_map_set_pose(initial_x_line_pose);
+}
+
 void init_sick_map_localize()
 {
+  use_config_initial_localization();
   register_base_callback(update_base_data);
   register_sick_localization_callback(update_sick_localization);
 }
@@ -78,20 +86,8 @@ void shutdown_sick_map_localize()
   unregister_base_callback(update_base_data);
 }
 
-void use_config_initial_localization()
-{
-  set_pose(mikes_config.localization_base_x, mikes_config.localization_base_y, mikes_config.localization_base_heading * M_PI / 180.0);
-
-  pose_type initial_x_line_pose;
-  initial_x_line_pose.x = mikes_config.localization_base_x + 11;
-  initial_x_line_pose.y = mikes_config.localization_base_y + 11;
-  initial_x_line_pose.heading = mikes_config.localization_base_heading * M_PI / 180.0;
-  x_line_map_set_pose(initial_x_line_pose);
-}
-
 void find_starting_localization()
 {
-  tim_hough_transform_set_mode(TIM_HOUGH_TRANSFORM_MODE_SINGLE);
   sleep(WAIT_BASE_DATA);
 
   is_finding_initial_pose = 1;
