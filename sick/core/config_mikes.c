@@ -48,5 +48,13 @@ void load_config()
     mikes_config.use_sick_cart_align = config_get_intval(cfg, "use_sick_cart_align", mikes_config.use_sick_cart_align);
     mikes_config.use_sick_strategy = config_get_intval(cfg, "use_sick_strategy", mikes_config.use_sick_strategy);
 
+    mikes_config.localization_base_x = config_get_doubleval(cfg, "localization_base_x", mikes_config.localization_base_x);
+    mikes_config.localization_base_y = config_get_doubleval(cfg, "localization_base_y", mikes_config.localization_base_y);
+    mikes_config.localization_base_heading = config_get_doubleval(cfg, "localization_base_heading", mikes_config.localization_base_heading);
+
+    mikes_config.localization_waiting_x = config_get_doubleval(cfg, "localization_waiting_x", mikes_config.localization_waiting_x);
+    mikes_config.localization_waiting_y = config_get_doubleval(cfg, "localization_waiting_y", mikes_config.localization_waiting_y);
+    mikes_config.localization_waiting_heading = config_get_doubleval(cfg, "localization_waiting_heading", mikes_config.localization_waiting_heading);
+
     config_dispose(cfg);
 }

@@ -29,6 +29,14 @@ typedef struct {
     int use_sick_localization;
     int use_sick_cart_align;
     int use_sick_strategy;
+
+    double localization_base_x;
+    double localization_base_y;
+    double localization_base_heading;
+
+    double localization_waiting_x;
+    double localization_waiting_y;
+    double localization_waiting_heading;
 } mikes_config_t;
 
 extern mikes_config_t mikes_config;

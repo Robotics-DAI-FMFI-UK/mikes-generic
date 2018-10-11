@@ -1,4 +1,3 @@
-#include <math.h>
 #include <pthread.h>
 #include <stdio.h>
 #include <string.h>
@@ -12,19 +11,12 @@
 #include "core/config_mikes.h"
 
 #include "sick_cart_align.h"
+#include "../../../mikes-common/bites/math_2d.h"
 #include "../../../mikes-common/modules/live/avoid.h"
 #include "../../../mikes-common/modules/live/base_module.h"
 #include "../../../mikes-common/modules/live/navig.h"
 #include "../../../mikes-common/modules/live/nxt.h"
 #include "../../../mikes-common/modules/passive/actuator.h"
-
-#define SICK_STRATEGY_WAITING_POINT_X 300.0
-#define SICK_STRATEGY_WAITING_POINT_Y 250.0
-#define SICK_STRATEGY_WAITING_POINT_HEADING (300.0 * M_PI / 180)
-
-#define SICK_STRATEGY_RETURNING_POINT_X 530.0
-#define SICK_STRATEGY_RETURNING_POINT_Y 170.0
-#define SICK_STRATEGY_RETURNING_POINT_HEADING (270.0 * M_PI / 180)
 
 #define MAX_SICK_STRATEGY_CALLBACKS 20
 
@@ -140,9 +132,9 @@ void process_next_step()
 {
   switch (current_state.current) {
     case SICK_STRATEGY_STATE_GRABBING:
-//      grab_line(1);
-//      grab_line(2);
-//      grab_line(3);
+      grab_line(1);
+      grab_line(2);
+      grab_line(3);
 
       set_and_send_new_current_state(SICK_STRATEGY_STATE_LOADED_ESCAPE);
       alert_new_data(fd);
@@ -151,19 +143,19 @@ void process_next_step()
       escape_now_and_quick();
 
       set_and_send_new_current_state(SICK_STRATEGY_STATE_MOVING_TO_CART);
-      navig_cmd_goto_point(SICK_STRATEGY_WAITING_POINT_X, SICK_STRATEGY_WAITING_POINT_Y, SICK_STRATEGY_WAITING_POINT_HEADING);
+      navig_cmd_goto_point(mikes_config.localization_waiting_x, mikes_config.localization_waiting_y, mikes_config.localization_waiting_heading * RADIAN);
       break;
     case SICK_STRATEGY_STATE_LOADED_ESCAPE:
       escape_now_and_quick();
 
       set_and_send_new_current_state(SICK_STRATEGY_STATE_RETURNING);
-      navig_cmd_goto_point(SICK_STRATEGY_RETURNING_POINT_X, SICK_STRATEGY_RETURNING_POINT_Y, SICK_STRATEGY_RETURNING_POINT_HEADING);
+      navig_cmd_goto_point(mikes_config.localization_base_x, mikes_config.localization_base_y, mikes_config.localization_base_heading * RADIAN);
       break;
     case SICK_STRATEGY_STATE_RELEASING:
       unload_cargo();
 
       set_and_send_new_current_state(SICK_STRATEGY_STATE_MOVING_TO_CART);
-      navig_cmd_goto_point(SICK_STRATEGY_WAITING_POINT_X, SICK_STRATEGY_WAITING_POINT_Y, SICK_STRATEGY_WAITING_POINT_HEADING);
+      navig_cmd_goto_point(mikes_config.localization_waiting_x, mikes_config.localization_waiting_y, mikes_config.localization_waiting_heading * RADIAN);
       break;
     case SICK_STRATEGY_STATE_STANDBY:
       // TODO maybe can do smth hre, atleast log
@@ -261,9 +253,9 @@ void start_game()
 {
   if (current_state.current == SICK_STRATEGY_STATE_STANDBY)
   {
-    set_and_send_new_current_state(SICK_STRATEGY_STATE_MOVING_TO_CART);
-    navig_cmd_goto_point(SICK_STRATEGY_WAITING_POINT_X, SICK_STRATEGY_WAITING_POINT_Y, SICK_STRATEGY_WAITING_POINT_HEADING);
     say("Let's go!");
+    set_and_send_new_current_state(SICK_STRATEGY_STATE_MOVING_TO_CART);
+    navig_cmd_goto_point(mikes_config.localization_waiting_x, mikes_config.localization_waiting_y, mikes_config.localization_waiting_heading * RADIAN);
     time_game_started = msec();
   }
 }

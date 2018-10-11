@@ -40,7 +40,6 @@ void init_modules()
   init_line_filter();
   init_tim_segment();
   init_tim_corner();
-  //init_xtion(64, 48);
   init_avoid();
   init_navig();
   init_nxt();
@@ -48,7 +47,6 @@ void init_modules()
 
   init_x_base(400);
   init_x_tim571(7000, 400);
-  //init_x_xtion(64, 48, 4, 300);
 
   init_x_line_map(mikes_config.line_map_file, 600, 350);
 
@@ -72,7 +70,6 @@ void shutdown_modules()
   shutdown_tim_corner();
 
   shutdown_x_line_map();
-  //shutdown_x_xtion();
   shutdown_x_tim571();
   shutdown_x_base();
   shutdown_nxt();
@@ -100,10 +97,10 @@ int main(int argc, char **argv)
   init_modules();
 
   sleep(3);
+  start_game();
 
   while (program_runs)
   {
-     sick_main_menu();
      sleep(1);
   }
   printf("going to shutdown modules\n");
