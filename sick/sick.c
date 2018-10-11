@@ -1,4 +1,5 @@
 #include <unistd.h>
+#include <stdio.h>
 
 #include "../mikes-common/bites/mikes.h"
 #include "../mikes-common/modules/live/base_module.h"
@@ -44,7 +45,6 @@ void init_modules()
   init_navig();
   init_nxt();
   init_wheels();
-  init_actuator();
 
   init_x_base(400);
   init_x_tim571(7000, 400);
@@ -56,6 +56,8 @@ void init_modules()
   init_sick_map_localize();
   init_sick_cart_align();
   init_sick_strategy();
+  sleep(3);
+  init_actuator();
 }
 
 void shutdown_modules()
@@ -64,23 +66,26 @@ void shutdown_modules()
   shutdown_sick_cart_align();
   shutdown_sick_map_localize();
   shutdown_sick_localization();
+  shutdown_tim_hough_transform();
+  shutdown_line_filter();
+  shutdown_tim_segment();
+  shutdown_tim_corner();
 
   shutdown_x_line_map();
   //shutdown_x_xtion();
   shutdown_x_tim571();
-  set_motor_speeds(0, 0);
   shutdown_x_base();
-
   shutdown_nxt();
+  shutdown_wheels();
   shutdown_avoid();
   shutdown_navig();
-
   shutdown_gui();
   shutdown_ui();
 }
 
 void sick_main_menu()
 {
+  nxt_clear_display();
   nxt_message("Mikes menu");
   nxt_message("[ENTER] run");
   nxt_message("[<] quit");
@@ -95,13 +100,13 @@ int main(int argc, char **argv)
   init_modules();
 
   sleep(3);
-  start_game();
 
   while (program_runs)
   {
-     // sick_main_menu();
+     sick_main_menu();
      sleep(1);
   }
+  printf("going to shutdown modules\n");
 
   shutdown_modules();
   mikes_shutdown();
