@@ -16,23 +16,32 @@ void update_sick_localization(pose_type *pose)
     x_line_map_toggle_pose_visible(1);
     was_set = 1;
   }
+
   pose_type copy_p;
   copy_p.x = pose->x / 10.0 + 11;
   copy_p.y = pose->y / 10.0 + 11;
   copy_p.heading = pose->heading;
-  x_line_map_set_pose(copy_p);
 
   pose_type old_p;
   get_pose(&old_p);
-  set_pose(copy_p.x, copy_p.y, copy_p.heading);
 
   base_data_type base_data;
   get_base_data(&base_data);
 
   char str[SML_LOGSTR_LEN];
-  sprintf(str, "[main] sick_map_localize::update_sick_localization(): x=%0.2f, y=%0.2f, heading_deg=%0.2f, old_x=%0.2f, old_y=%0.2f, old_heading_deg=%0.2f, base_heading=%d",
-    copy_p.x, copy_p.y, copy_p.heading / M_PI * 180.0, old_p.x, old_p.y, old_p.heading / M_PI * 180.0, (int)base_data.heading);
-  mikes_log(ML_DEBUG, str);
+
+  if (navig_can_actualize_pose_now()) {
+    x_line_map_set_pose(copy_p);
+    set_pose(copy_p.x, copy_p.y, copy_p.heading);
+
+    sprintf(str, "[main] sick_map_localize::update_sick_localization_updated(): x=%0.2f, y=%0.2f, heading_deg=%0.2f, old_x=%0.2f, old_y=%0.2f, old_heading_deg=%0.2f, base_heading=%d",
+      copy_p.x, copy_p.y, copy_p.heading / M_PI * 180.0, old_p.x, old_p.y, old_p.heading / M_PI * 180.0, (int)base_data.heading);
+    mikes_log(ML_DEBUG, str);
+  } else {
+    sprintf(str, "[main] sick_map_localize::update_sick_localization_not_updated(): x=%0.2f, y=%0.2f, heading_deg=%0.2f, old_x=%0.2f, old_y=%0.2f, old_heading_deg=%0.2f, base_heading=%d",
+      copy_p.x, copy_p.y, copy_p.heading / M_PI * 180.0, old_p.x, old_p.y, old_p.heading / M_PI * 180.0, (int)base_data.heading);
+    mikes_log(ML_DEBUG, str);
+  }
 }
 
 void update_base_data(base_data_type *data)
@@ -53,4 +62,3 @@ void shutdown_sick_map_localize()
   unregister_sick_localization_callback(update_sick_localization);
   unregister_base_callback(update_base_data);
 }
-

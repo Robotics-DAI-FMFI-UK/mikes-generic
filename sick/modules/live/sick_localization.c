@@ -224,9 +224,19 @@ void tim_corner_new_data(corners_data *corners)
   }
 }
 
-void request_actualize_pose()
+void request_actualize_pose(int cmd)
 {
-  tim_hough_transform_do_compute_once();
+  switch (cmd) {
+    case NAVIG_START_LOCALIZE:
+      tim_hough_transform_set_mode(TIM_HOUGH_TRANSFORM_MODE_CONTINUOUS);
+      break;
+    case NAVIG_STOP_LOCALIZE:
+      tim_hough_transform_set_mode(TIM_HOUGH_TRANSFORM_MODE_SINGLE);
+      break
+    default:
+      perror("mikes:sick_localization unknown cmd %d\n", cmd);
+      break;
+  }
 }
 
 void init_sick_localization()
