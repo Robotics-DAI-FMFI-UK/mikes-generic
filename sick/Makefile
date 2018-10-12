@@ -3,6 +3,13 @@ CPP=g++
 PROG=../bin/sick
 COMMON_SRCS=
 COMMON_DIR=../mikes-common
+
+MIKES_BASIC=${COMMON_DIR}/modules/passive/mikes_logs.c \
+            ${COMMON_DIR}/config/config.c \
+            core/config_mikes.c \
+            ${COMMON_DIR}/bites/mikes.c \
+            ${COMMON_DIR}/bites/util.c
+
 SRCS=$(COMMON_DIR)/modules/passive/mikes_logs.c \
      $(COMMON_DIR)/modules/live/ncurses_control.c \
      $(COMMON_DIR)/modules/live/base_module.c \
@@ -47,6 +54,14 @@ SRCS=$(COMMON_DIR)/modules/passive/mikes_logs.c \
 XTION_SRCS=$(COMMON_DIR)/modules/live/xtion/xtion.cpp
 XTION_OBJS=$(COMMON_DIR)/modules/live/xtion/Arm-Release/xtion.o
 
+TEST_CART_ALIGN_SRCS=tests/test_cart_align.c \
+                    modules/live/sick_cart_align.c \
+                    ${COMMON_DIR}/modules/live/base_module.c \
+                    ${COMMON_DIR}/modules/passive/pose.c \
+                    ${COMMON_DIR}/modules/live/tim571.c \
+                    ${MIKES_BASIC}
+TEST_CART_ALIGN_OBJS=${TEST_CART_ALIGN_SRCS:.c=.o} 
+
 OPTIMIZE=-O0
 DEBUG_FLAGS=-g
 CPPSRCS=
@@ -68,11 +83,16 @@ ${XTION_OBJS}: ${XTION_SRCS}
 
 install:
 
-test:
+test:	../test_cart_align
+
+../test_cart_align: ${TEST_CART_ALIGN_OBJS}
+	${CC} -o ../test_cart_align $^ ${LDFLAGS} ${DEBUG_FLAGS}
+
 
 uninstall:
 
 clean:
 	echo "cleaning"
 	rm -f *.o */*.o ${PROG}
+	rm -f ../test_cart_align
 	$(MAKE) -C ../mikes-common clean
