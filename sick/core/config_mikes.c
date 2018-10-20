@@ -5,7 +5,7 @@
 
 mikes_config_t mikes_config;
 
-mikes_config_t default_mikes_config = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+mikes_config_t default_mikes_config = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
 mikes_config_t mikes_config;
 
 void load_config()
@@ -48,13 +48,29 @@ void load_config()
     mikes_config.use_sick_cart_align = config_get_intval(cfg, "use_sick_cart_align", mikes_config.use_sick_cart_align);
     mikes_config.use_sick_strategy = config_get_intval(cfg, "use_sick_strategy", mikes_config.use_sick_strategy);
 
-    mikes_config.localization_base_x = config_get_doubleval(cfg, "localization_base_x", mikes_config.localization_base_x);
-    mikes_config.localization_base_y = config_get_doubleval(cfg, "localization_base_y", mikes_config.localization_base_y);
-    mikes_config.localization_base_heading = config_get_doubleval(cfg, "localization_base_heading", mikes_config.localization_base_heading);
+    mikes_config.localization_start_x = config_get_doubleval(cfg, "localization_start_x", mikes_config.localization_start_x);
+    mikes_config.localization_start_y = config_get_doubleval(cfg, "localization_start_y", mikes_config.localization_start_y);
+    mikes_config.localization_start_heading = config_get_doubleval(cfg, "localization_start_heading", mikes_config.localization_start_heading);
 
-    mikes_config.localization_waiting_x = config_get_doubleval(cfg, "localization_waiting_x", mikes_config.localization_waiting_x);
-    mikes_config.localization_waiting_y = config_get_doubleval(cfg, "localization_waiting_y", mikes_config.localization_waiting_y);
-    mikes_config.localization_waiting_heading = config_get_doubleval(cfg, "localization_waiting_heading", mikes_config.localization_waiting_heading);
+    mikes_config.localization_waiting1_x = config_get_doubleval(cfg, "localization_waiting1_x", mikes_config.localization_waiting1_x);
+    mikes_config.localization_waiting1_y = config_get_doubleval(cfg, "localization_waiting1_y", mikes_config.localization_waiting1_y);
+    mikes_config.localization_waiting1_heading = config_get_doubleval(cfg, "localization_waiting1_heading", mikes_config.localization_waiting1_heading);
+
+    mikes_config.localization_waiting2_x = config_get_doubleval(cfg, "localization_waiting2_x", mikes_config.localization_waiting2_x);
+    mikes_config.localization_waiting2_y = config_get_doubleval(cfg, "localization_waiting2_y", mikes_config.localization_waiting2_y);
+    mikes_config.localization_waiting2_heading = config_get_doubleval(cfg, "localization_waiting2_heading", mikes_config.localization_waiting2_heading);
+
+    mikes_config.localization_base1_x = config_get_doubleval(cfg, "localization_base1_x", mikes_config.localization_base1_x);
+    mikes_config.localization_base1_y = config_get_doubleval(cfg, "localization_base1_y", mikes_config.localization_base1_y);
+    mikes_config.localization_base1_heading = config_get_doubleval(cfg, "localization_base1_heading", mikes_config.localization_base1_heading);
+
+    mikes_config.localization_base2_x = config_get_doubleval(cfg, "localization_base2_x", mikes_config.localization_base2_x);
+    mikes_config.localization_base2_y = config_get_doubleval(cfg, "localization_base2_y", mikes_config.localization_base2_y);
+    mikes_config.localization_base2_heading = config_get_doubleval(cfg, "localization_base2_heading", mikes_config.localization_base2_heading);
+
+    mikes_config.localization_base3_x = config_get_doubleval(cfg, "localization_base3_x", mikes_config.localization_base3_x);
+    mikes_config.localization_base3_y = config_get_doubleval(cfg, "localization_base3_y", mikes_config.localization_base3_y);
+    mikes_config.localization_base3_heading = config_get_doubleval(cfg, "localization_base3_heading", mikes_config.localization_base3_heading);
 
     config_dispose(cfg);
 }

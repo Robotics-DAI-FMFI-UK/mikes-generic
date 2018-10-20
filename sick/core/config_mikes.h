@@ -30,13 +30,29 @@ typedef struct {
     int use_sick_cart_align;
     int use_sick_strategy;
 
-    double localization_base_x;
-    double localization_base_y;
-    double localization_base_heading;
+    double localization_start_x;
+    double localization_start_y;
+    double localization_start_heading;
 
-    double localization_waiting_x;
-    double localization_waiting_y;
-    double localization_waiting_heading;
+    double localization_waiting1_x;
+    double localization_waiting1_y;
+    double localization_waiting1_heading;
+
+    double localization_waiting2_x;
+    double localization_waiting2_y;
+    double localization_waiting2_heading;
+
+    double localization_base1_x;
+    double localization_base1_y;
+    double localization_base1_heading;
+
+    double localization_base2_x;
+    double localization_base2_y;
+    double localization_base2_heading;
+
+    double localization_base3_x;
+    double localization_base3_y;
+    double localization_base3_heading;
 } mikes_config_t;
 
 extern mikes_config_t mikes_config;
