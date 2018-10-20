@@ -21,7 +21,7 @@ int main(int argc, char **argv)
     init_tim571();
     init_sick_cart_align();
 
-    sleep(1);
+    sleep(3);
     test_cart_align();
 
     while (program_runs)

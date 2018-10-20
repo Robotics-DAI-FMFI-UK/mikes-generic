@@ -14,9 +14,11 @@
 
 #define MAX_SICK_CART_ALIGN_CALLBACKS 20
 
-#define SCENE_DIFFERENCE_MAX_DISTANCE_TO_LOOK 4000
+#define SCENE_DIFFERENCE_MAX_DISTANCE_TO_LOOK 1000
 
-#define SCENE_DIFFERENCE_NOTICE_THRESHOLD 2000
+#define DO_NOT_EVEN_WAIT_FOR_ARRIVE_NEAR_DISTANCE 300
+
+#define SCENE_DIFFERENCE_NOTICE_THRESHOLD 800
 #define SCENE_DIFFERENCE_STILL_THRESHOLD 350
 #define FIRST_RAY_OF_INTEREST 290
 #define LAST_RAY_OF_INTEREST 520
@@ -26,7 +28,9 @@
 
 #define FINAL_ALIGNMENT_TUNEUP_USEC 100000
 
-#define ALIGNMENT_WAIT_TIMEOUT (60*1000000)
+#define ALIGNMENT_WAIT_TIMEOUT (6*60*1000000)
+
+#define MAX_ALIGN_MOVE_TIME (5 * 1000000)
 
 static pthread_mutex_t      sick_cart_align_lock;
 static int                  fd[2];
@@ -74,7 +78,8 @@ double compute_scene_difference()
     for (int i = FIRST_RAY_OF_INTEREST; i < LAST_RAY_OF_INTEREST; i++)
     {
       double diff = 0.0;
-      if (dist_local_copy[i] < SCENE_DIFFERENCE_MAX_DISTANCE_TO_LOOK)
+      if ((dist_local_copy[i] < SCENE_DIFFERENCE_MAX_DISTANCE_TO_LOOK) &&
+          (dist_local_copy[i] > 50))
         diff = fabs(dist_local_copy[i] - dist_remarkable_scene[i]) / 10.0;
       scene_difference += diff;
     }
@@ -103,7 +108,7 @@ int find_last_free_ray(int side, int expected_distance_to_be_free)
   for (int i = i1; i != i2; i += di)
   {
     int free = 1;
-    for (int j = 0; j < 4; j ++)
+    for (int j = 0; j < 20; j ++)
     {
       if (dist_remarkable_scene[i + j] < expected_distance_to_be_free)
       {
@@ -124,7 +129,7 @@ int determine_distance_to_cart(int *nearest_ray)
   for (int i = FIRST_RAY_OF_INTEREST; i < LAST_RAY_OF_INTEREST - 5; i++)
   {
     long d = 0;
-    for (int j = 0; j < 5; j++)
+    for (int j = 0; j < 3; j++)
       d += dist_remarkable_scene[i + j];
     if (d < min_dist_mm) 
     {
@@ -132,7 +137,7 @@ int determine_distance_to_cart(int *nearest_ray)
       *nearest_ray = i + 2;
     }
   }
-  return min_dist_mm / 5;
+  return min_dist_mm / 3;
 }
 
 
@@ -157,36 +162,45 @@ uint8_t process_align_cart()
     usleep(20000);
     double scene_difference = compute_scene_difference();
     if (scene_difference > SCENE_DIFFERENCE_NOTICE_THRESHOLD) scene_has_changed = 1;
-    //printf("scene diff: %.3lf\n", scene_difference);
+    printf("scene diff: %.3lf\n", scene_difference);
     if (usec() - time_wait_for_alignment_started > ALIGNMENT_WAIT_TIMEOUT)
     {
        state = STATE_CART_ALIGN_IDLE;
        return SICK_CART_ALIGN_TIMEOUT;
     }
+    int nearest_ray;
+    int distance_to_vehicle = determine_distance_to_cart(&nearest_ray);
+    if (distance_to_vehicle < DO_NOT_EVEN_WAIT_FOR_ARRIVE_NEAR_DISTANCE) break;
   }
   if (!program_runs) return SICK_CART_ALIGN_FAIL;
   mikes_log(ML_INFO, "cart arrives");
   say("Its coming");
+  printf("Its coming\n");
   
   // wait until it stops changing (cart will stop)
-  int scene_changing = 1;
+  int scene_changing = 10;
   memcpy(dist_remarkable_scene, dist_local_copy, sizeof(uint16_t) * TIM571_DATA_COUNT);
   while (program_runs && scene_changing)
   {
     usleep(500000);
     double scene_difference = compute_scene_difference();
-    if (scene_difference < SCENE_DIFFERENCE_STILL_THRESHOLD) scene_changing = 0;
+    if (scene_difference < SCENE_DIFFERENCE_STILL_THRESHOLD) scene_changing--;
+    else scene_changing = 10;
     memcpy(dist_remarkable_scene, dist_local_copy, sizeof(uint16_t) * TIM571_DATA_COUNT);
-    //printf("scene diff: %.3lf\n", scene_difference);
+    printf("scene diff: %.3lf\n", scene_difference);
   }
   if (!program_runs) return SICK_CART_ALIGN_FAIL;
   mikes_log(ML_INFO, "cart has stopped");
   say("stopped");
+  printf("stopped\n");
 
   // now keep computing where the vehicle has landed and aligning
   int happy_with_alignment = 0;
   state = STATE_CART_ALIGN_WORKING;
+  //set_motor_speeds(12, 12);
   //int cnt = 0;
+  int skip_once = 0;
+  long long time_aligning_started = usec();
   while (program_runs && !happy_with_alignment)
   {
     int nearest_ray;
@@ -196,7 +210,7 @@ uint8_t process_align_cart()
     int leftmost_free_ray = find_last_free_ray(LEFTMOST, distance_to_vehicle + 300);
 
     //printf("maxticks=%d", MM2COUNTER(distance_to_vehicle));
-    set_max_ticks(MM2COUNTER(distance_to_vehicle));
+    //set_max_ticks(MM2COUNTER(distance_to_vehicle));
 
 /*
     cnt++;
@@ -207,7 +221,7 @@ uint8_t process_align_cart()
              distance_to_vehicle); 
  */
 
-    if (distance_to_vehicle < SATISFYING_ALIGNMENT_DISTANCE) 
+    if (skip_once && ((distance_to_vehicle < SATISFYING_ALIGNMENT_DISTANCE) || (usec() - time_aligning_started > MAX_ALIGN_MOVE_TIME)))
     {
       usleep(FINAL_ALIGNMENT_TUNEUP_USEC);
       happy_with_alignment = 1;
@@ -218,6 +232,7 @@ uint8_t process_align_cart()
       stop_now();
       state = STATE_CART_ALIGN_IDLE;
       say("missed it");
+      printf("missed it\n");
       return SICK_CART_ALIGN_FAIL;
     }
     else
@@ -228,8 +243,10 @@ uint8_t process_align_cart()
       usleep(10000);
       memcpy(dist_remarkable_scene, dist_local_copy, sizeof(uint16_t) * TIM571_DATA_COUNT);
     }
+    skip_once = 1;
   }    
   say("aligned");
+  printf("aligned\n");
   mikes_log(ML_INFO, "aligned");
 
   state = STATE_CART_ALIGN_IDLE;
