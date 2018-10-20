@@ -44,12 +44,14 @@ void init_modules()
   init_navig();
   init_nxt();
   init_wheels();
+  avoid_zone_enable(1, 1);
 
   init_x_base(400);
-  init_x_tim571(7000, 400);
+  init_x_tim571(20000, 400);
 
   init_x_line_map(mikes_config.line_map_file, 600, 350);
 
+  sleep(3);
   init_sick_localization();
   init_sick_map_localize();
   init_sick_cart_align();
