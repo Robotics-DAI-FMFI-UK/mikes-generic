@@ -68,12 +68,12 @@ void update_base_data(base_data_type *data)
 void use_config_initial_localization()
 {
   x_line_map_toggle_pose_visible(1);
-  set_pose(mikes_config.localization_base_x, mikes_config.localization_base_y, mikes_config.localization_base_heading * M_PI / 180.0);
+  set_pose(mikes_config.localization_start_x, mikes_config.localization_start_y, mikes_config.localization_start_heading * M_PI / 180.0);
 
   pose_type initial_x_line_pose;
-  initial_x_line_pose.x = mikes_config.localization_base_x + 11;
-  initial_x_line_pose.y = mikes_config.localization_base_y + 11;
-  initial_x_line_pose.heading = mikes_config.localization_base_heading * M_PI / 180.0;
+  initial_x_line_pose.x = mikes_config.localization_start_x + 11;
+  initial_x_line_pose.y = mikes_config.localization_start_y + 11;
+  initial_x_line_pose.heading = mikes_config.localization_start_heading * M_PI / 180.0;
   x_line_map_set_pose(initial_x_line_pose);
 }
 
