@@ -93,6 +93,6 @@ uninstall:
 
 clean:
 	echo "cleaning"
-	rm -f *.o */*.o ${PROG}
+	rm -f *.o */*.o */*/*.o ${PROG}
 	rm -f ../test_cart_align
 	$(MAKE) -C ../mikes-common clean
