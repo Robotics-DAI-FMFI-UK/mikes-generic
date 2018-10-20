@@ -5,8 +5,8 @@
 
 #include "../../../mikes-common/modules/passive/pose.h"
 
-#define SICK_MAP_WITH_IN_MM 5800
-#define SICK_MAP_HEIGHT_IN_MM 3270
+#define SICK_MAP_WITH_IN_MM    13230 /* 5800 */
+#define SICK_MAP_HEIGHT_IN_MM   7090 /* 3270 */
 
 #define SICK_LOCALIZATION_FAIL    0
 #define SICK_LOCALIZATION_SUCCESS 1
