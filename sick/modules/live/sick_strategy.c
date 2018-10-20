@@ -20,7 +20,7 @@
 
 #define MAX_SICK_STRATEGY_CALLBACKS 20
 
-#define GAME_DURATION_MSEC (10*60*1000)
+#define GAME_DURATION_MSEC (20*60*1000)
 
 static pthread_mutex_t      sick_strategy_lock;
 static int                  fd[2];
@@ -37,8 +37,8 @@ static long long time_game_started;
 #define SICK_STRATEGY_LOGSTR_LEN   1024
              
 static char *sick_strategy_state_str[SICK_STRATEGY_STATE__COUNT] = 
-    { "STANDBY", "BLOCKED", "MOVING_TO_CART", "WAITING_CART", "ALIGN", 
-      "GRABBING", "LOADED_ESCAPE", "NOT_LOADED_ESCAPE", "RETURNING", "RELEASING" };
+    { "?NONE", "STANDBY", "?BLOCKED", "MOVING1_TO_CART", "MOVING2_TO_CART", "WAITING_CART", "ALIGN", 
+      "GRABBING", "LOADED_ESCAPE", "NOT_LOADED_ESCAPE", "RETURNING1", "RETURNING2", "RETURNING3", "RELEASING" };
 
 void sick_strategy_log_state(int state, int state_old)
 {
@@ -101,30 +101,43 @@ void update_avoid_callback(avoid_callback_data_t *data)
 
 void update_navig_callback(navig_callback_data_t *data)
 {
-  if (current_state.current == SICK_STRATEGY_STATE_MOVING_TO_CART) {
-    switch (data->navig_result) {
-      case NAVIG_RESULT_OK:
+  switch (current_state.current) {
+    case SICK_STRATEGY_STATE_MOVING1_TO_CART:
+      if (data->navig_result != NAVIG_RESULT_WAIT) {
+        avoid_zone_enable(1, 1);
+        set_and_send_new_current_state(SICK_STRATEGY_STATE_MOVING2_TO_CART);
+        navig_cmd_goto_point(mikes_config.localization_waiting2_x, mikes_config.localization_waiting2_y, mikes_config.localization_waiting2_heading * RADIAN);
+      }
+      break;
+    case SICK_STRATEGY_STATE_MOVING2_TO_CART:
+      if (data->navig_result != NAVIG_RESULT_WAIT) {
         set_and_send_new_current_state(SICK_STRATEGY_STATE_ALIGN);
         align_robot_to_cart();
-        break;
-      case NAVIG_RESULT_FAILED:
-        // TODO do smth
-        break;
-      case NAVIG_RESULT_WAIT:
-        break;
-    }
-  } else if (current_state.current == SICK_STRATEGY_STATE_RETURNING) {
-    switch (data->navig_result) {
-      case NAVIG_RESULT_OK:
+        /* to_debug: replace with lines below to ignore align+grabbing */
+        //set_and_send_new_current_state(SICK_STRATEGY_STATE_LOADED_ESCAPE);
+        //alert_new_data(fd);
+      }
+      break;
+    case SICK_STRATEGY_STATE_RETURNING1:
+      if (data->navig_result != NAVIG_RESULT_WAIT) {
+        avoid_zone_enable(1, 0);
+        set_and_send_new_current_state(SICK_STRATEGY_STATE_RETURNING2);
+        navig_cmd_goto_point(mikes_config.localization_base2_x, mikes_config.localization_base2_y, mikes_config.localization_base2_heading * RADIAN);
+      }
+      break;
+    case SICK_STRATEGY_STATE_RETURNING2:
+      if (data->navig_result != NAVIG_RESULT_WAIT) {
+        avoid_zone_enable(1, 0);
+        set_and_send_new_current_state(SICK_STRATEGY_STATE_RETURNING3);
+        navig_cmd_goto_point(mikes_config.localization_base3_x, mikes_config.localization_base3_y, mikes_config.localization_base3_heading * RADIAN);
+      }
+      break;
+    case SICK_STRATEGY_STATE_RETURNING3:
+      if (data->navig_result != NAVIG_RESULT_WAIT) {
         set_and_send_new_current_state(SICK_STRATEGY_STATE_RELEASING);
         alert_new_data(fd);
-        break;
-      case NAVIG_RESULT_FAILED:
-        // TODO do smth
-        break;
-      case NAVIG_RESULT_WAIT:
-        break;
-    }
+      }
+      break;
   }
 }
 
@@ -142,27 +155,38 @@ void process_next_step()
     case SICK_STRATEGY_STATE_NOT_LOADED_ESCAPE:
       escape_now_and_quick();
 
-      set_and_send_new_current_state(SICK_STRATEGY_STATE_MOVING_TO_CART);
-      navig_cmd_goto_point(mikes_config.localization_waiting_x, mikes_config.localization_waiting_y, mikes_config.localization_waiting_heading * RADIAN);
+      avoid_zone_enable(1, 1);
+      set_and_send_new_current_state(SICK_STRATEGY_STATE_MOVING1_TO_CART);
+      navig_cmd_goto_point(mikes_config.localization_waiting1_x, mikes_config.localization_waiting1_y, mikes_config.localization_waiting1_heading * RADIAN);
       break;
     case SICK_STRATEGY_STATE_LOADED_ESCAPE:
       escape_now_and_quick();
 
-      set_and_send_new_current_state(SICK_STRATEGY_STATE_RETURNING);
-      navig_cmd_goto_point(mikes_config.localization_base_x, mikes_config.localization_base_y, mikes_config.localization_base_heading * RADIAN);
+      avoid_zone_enable(1, 1);
+      set_and_send_new_current_state(SICK_STRATEGY_STATE_RETURNING1);
+      navig_cmd_goto_point(mikes_config.localization_base1_x, mikes_config.localization_base1_y, mikes_config.localization_base1_heading * RADIAN);
       break;
     case SICK_STRATEGY_STATE_RELEASING:
       unload_cargo();
 
-      set_and_send_new_current_state(SICK_STRATEGY_STATE_MOVING_TO_CART);
-      navig_cmd_goto_point(mikes_config.localization_waiting_x, mikes_config.localization_waiting_y, mikes_config.localization_waiting_heading * RADIAN);
+      set_motor_speeds(8, 12);
+      usleep(3500000);
+
+      avoid_zone_enable(1, 1);
+      set_and_send_new_current_state(SICK_STRATEGY_STATE_MOVING1_TO_CART);
+      navig_cmd_goto_point(mikes_config.localization_waiting1_x, mikes_config.localization_waiting1_y, mikes_config.localization_waiting1_heading * RADIAN);
       break;
     case SICK_STRATEGY_STATE_STANDBY:
-      // TODO maybe can do smth hre, atleast log
+      // waiting until calling start_game()
       break;
-    default:
-      printf("Process next step with not defined behavior %d\n", current_state.current);
-      return;
+    default: 
+      {
+        char str[SICK_STRATEGY_LOGSTR_LEN];
+        sprintf(str, "[sick_strategy] sick_strategy::process_next_step(): msg=\"wrong state!\", state=%d", current_state.current);
+        mikes_log(ML_ERR, str);
+        printf("Process next step with not defined behavior %d\n", current_state.current);
+        return;
+      }
   }
 }
 
@@ -254,8 +278,9 @@ void start_game()
   if (current_state.current == SICK_STRATEGY_STATE_STANDBY)
   {
     say("Let's go!");
-    set_and_send_new_current_state(SICK_STRATEGY_STATE_MOVING_TO_CART);
-    navig_cmd_goto_point(mikes_config.localization_waiting_x, mikes_config.localization_waiting_y, mikes_config.localization_waiting_heading * RADIAN);
+    avoid_zone_enable(1, 1);
+    set_and_send_new_current_state(SICK_STRATEGY_STATE_MOVING1_TO_CART);
+    navig_cmd_goto_point(mikes_config.localization_waiting1_x, mikes_config.localization_waiting1_y, mikes_config.localization_waiting1_heading * RADIAN);
     time_game_started = msec();
   }
 }
