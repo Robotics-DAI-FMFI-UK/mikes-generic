@@ -31,6 +31,7 @@ void update_sick_localization(sick_localization_t *result)
     copy_p.x = result->pose.x / 10.0;
     copy_p.y = result->pose.y / 10.0;
     copy_p.heading = result->pose.heading;
+    printf("Success localization %f %f %f \n", result->pose.x, result->pose.y, result->pose.heading);
 
     pose_type old_p;
     get_pose(&old_p);

@@ -75,6 +75,7 @@ void set_and_send_new_current_state(uint8_t new_state)
   uint8_t state_old = current_state.old;
   pthread_mutex_unlock(&sick_strategy_lock);
   sick_strategy_log_state(state, state_old);
+  printf("Changing from state %d to state %d\n", state_old, state);
 }
 
 void update_sick_cart_align_callback(sick_cart_align_t *result)
@@ -277,7 +278,7 @@ void start_game()
 {
   if (current_state.current == SICK_STRATEGY_STATE_STANDBY)
   {
-    say("Let's go!");
+    say("Lets go!");
     avoid_zone_enable(1, 1);
     set_and_send_new_current_state(SICK_STRATEGY_STATE_MOVING1_TO_CART);
     navig_cmd_goto_point(mikes_config.localization_waiting1_x, mikes_config.localization_waiting1_y, mikes_config.localization_waiting1_heading * RADIAN);

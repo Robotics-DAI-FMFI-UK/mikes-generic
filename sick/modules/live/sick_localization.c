@@ -179,7 +179,8 @@ int get_pose_base_on_corners_and_heading(corners_data *corners, base_data_type *
     get_map_x_and_y(&corner_index, &difference_x, &difference_y, &result_pose->x, &result_pose->y);
     get_heading(corner, &corner_index, &result_pose->x, &result_pose->y, &result_pose->heading);
     if (result_pose->x > 0 && result_pose->x < SICK_MAP_WITH_IN_MM && result_pose->y > 0  && result_pose->y < SICK_MAP_HEIGHT_IN_MM) {
-      return SICK_LOCALIZATION_SUCCESS;
+       printf("Success localization %f %f \n", result_pose->x, result_pose->y);
+       return SICK_LOCALIZATION_SUCCESS;
     }
   }
   return SICK_LOCALIZATION_FAIL;

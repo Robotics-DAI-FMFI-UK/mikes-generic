@@ -47,7 +47,7 @@ void init_modules()
   avoid_zone_enable(1, 1);
 
   init_x_base(400);
-  init_x_tim571(20000, 400);
+  init_x_tim571(5000, 400);
 
   init_x_line_map(mikes_config.line_map_file, 600, 350);
 
