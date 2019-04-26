@@ -3,6 +3,7 @@
 #include "../mikes-common/modules/live/ncurses_control.h"
 #include "../mikes-common/modules/live/base_module.h"
 #include "../mikes-common/bites/mikes.h"
+#include "modules/passive/rect_map_localization.h"
 
 static int window;
 

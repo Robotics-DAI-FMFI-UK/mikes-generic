@@ -14,6 +14,9 @@
 #include "../mikes-common/modules/live/tim_corner.h"
 #include "../mikes-common/modules/passive/x_line_map.h"
 
+#include "modules/live/rect_localization.h"
+#include "modules/passive/rect_map_localization.h"
+
 #include "core/config_mikes.h"
 
 void init_modules()
@@ -29,6 +32,9 @@ void init_modules()
   init_tim_segment();
   init_tim_corner();
 
+  init_rect_localization();
+  init_rect_map_localization();
+
   init_x_base(400);
   init_x_tim571(7000, 400);
 
@@ -39,10 +45,13 @@ void shutdown_modules()
 {
   shutdown_x_line_map();
 
-  shutdown_tim_hough_transform();
-  shutdown_line_filter();
-  shutdown_tim_segment();
+  shutdown_rect_map_localization();
+  shutdown_rect_localization();
+
   shutdown_tim_corner();
+  shutdown_tim_segment();
+  shutdown_line_filter();
+  shutdown_tim_hough_transform();
   shutdown_x_tim571();
 
   shutdown_x_base();
