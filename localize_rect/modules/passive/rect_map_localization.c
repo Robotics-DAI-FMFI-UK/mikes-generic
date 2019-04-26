@@ -40,6 +40,7 @@ int can_update_localization()
 
   if (rect_map_data.localize_is_required) {
     rect_map_data.localize_is_required = 0;
+    stop_rect_map_localization();
 
     pthread_mutex_unlock(&rect_map_data.data_lock);
     return 1;
@@ -81,10 +82,10 @@ void update_rect_localization(rect_localization_t *result)
     copy_p.x = result->pose.x / 10.0;
     copy_p.y = result->pose.y / 10.0;
     copy_p.heading = result->pose.heading;
-    printf("Success localization %f %f %f \n", result->pose.x, result->pose.y, result->pose.heading);
 
     if (can_update_localization()) {
       set_pose(copy_p.x, copy_p.y, copy_p.heading);
+      x_line_map_toggle_pose_visible(1);
     }
   } else {
     unsuccessful_attempt();
