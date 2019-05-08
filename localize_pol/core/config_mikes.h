@@ -3,7 +3,7 @@
 
 #include "../mikes-common/config/config.h"
 
-#define MIKES_CONFIG "localize_rect.cfg"
+#define MIKES_CONFIG "localize_pol.cfg"
 
 typedef struct {
     int autostart;
