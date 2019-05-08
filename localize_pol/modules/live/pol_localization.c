@@ -41,10 +41,14 @@ int are_equals_two_segments(segment_data *segment1, segment_data *segment2)
   return 0;
 }
 
+int pol_segment_comparator(const void *a, const void *b) {
+   return ((*(pol_segment_t*)b).line.angle - (*(pol_segment_t*)a).line.angle);
+}
+
 int get_pose_base_on_corners_and_heading(corners_data *corners, base_data_type *base_data, pose_type *result_pose)
 {
-  pol_segments_t segments;
-  segments.count = 0;
+  pol_segments_t found_segments;
+  found_segments.count = 0;
 
   for (int c1_index = 0; c1_index < corners->count; c1_index++) {
     corner_data *corner1 = &corners->corners[c1_index];
@@ -54,33 +58,36 @@ int get_pose_base_on_corners_and_heading(corners_data *corners, base_data_type *
 
       if (are_equals_two_segments(&corner1->segment1, &corner2->segment1)) {
         // corner1->segment1 == corner2->segment1
-        segments.segments[segments.count].segment = corner1->segment1;
-        segments.segments[segments.count].corner1 = *corner1;
-        segments.segments[segments.count].corner2 = *corner2;
-        segments.count = segments.count + 1;
+        found_segments.segments[found_segments.count].segment = corner1->segment1;
+        found_segments.segments[found_segments.count].corner1 = *corner1;
+        found_segments.segments[found_segments.count].corner2 = *corner2;
+        found_segments.count = found_segments.count + 1;
       } else if (are_equals_two_segments(&corner1->segment2, &corner2->segment2)) {
         // corner1->segment2 == corner2->segment2
-        segments.segments[segments.count].segment = corner1->segment2;
-        segments.segments[segments.count].corner1 = *corner1;
-        segments.segments[segments.count].corner2 = *corner2;
-        segments.count = segments.count + 1;
+        found_segments.segments[found_segments.count].segment = corner1->segment2;
+        found_segments.segments[found_segments.count].corner1 = *corner1;
+        found_segments.segments[found_segments.count].corner2 = *corner2;
+        found_segments.count = found_segments.count + 1;
       } else if (are_equals_two_segments(&corner1->segment1, &corner2->segment2)) {
         // corner1->segment1 == corner2->segment2
-        segments.segments[segments.count].segment = corner1->segment1;
-        segments.segments[segments.count].corner1 = *corner1;
-        segments.segments[segments.count].corner2 = *corner2;
-        segments.count = segments.count + 1;
+        found_segments.segments[found_segments.count].segment = corner1->segment1;
+        found_segments.segments[found_segments.count].corner1 = *corner1;
+        found_segments.segments[found_segments.count].corner2 = *corner2;
+        found_segments.count = found_segments.count + 1;
       } else if (are_equals_two_segments(&corner1->segment2, &corner2->segment1)) {
         // corner1->segment2 == corner2->segment1
-        segments.segments[segments.count].segment = corner1->segment1;
-        segments.segments[segments.count].corner1 = *corner1;
-        segments.segments[segments.count].corner2 = *corner2;
-        segments.count = segments.count + 1;
+        found_segments.segments[found_segments.count].segment = corner1->segment1;
+        found_segments.segments[found_segments.count].corner1 = *corner1;
+        found_segments.segments[found_segments.count].corner2 = *corner2;
+        found_segments.count = found_segments.count + 1;
       }
     }
   }
   // TODO
   // return POL_LOCALIZATION_SUCCESS;
+
+  qsort(found_segments.segments, found_segments.count, sizeof(pol_segment_t), pol_segment_comparator);
+
 
   // printf("Number of segments found %d \n", segments.count);
 
