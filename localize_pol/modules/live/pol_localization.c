@@ -34,12 +34,57 @@ static int                                     callbacks_count;
 
 static int online;
 
+int are_equals_two_segments(segment_data *segment1, segment_data *segment2)
+{
+  if ((segment1->start.x == segment2.start.x && segment1->start.y == segment2->start.y && segment1->end.x == segment2->end.x && segment1->end.y == segment2->end.y) ||
+      (segment1->start.x == segment2.end.x && segment1->start.y == segment2->end.y && segment1->start.x == segment2->start.x && segment1->end.y == segment2->end.y)) {
+    return 1;
+  }
+  return 0;
+}
+
 int get_pose_base_on_corners_and_heading(corners_data *corners, base_data_type *base_data, pose_type *result_pose)
 {
-  for (int c_index = 0; c_index < corners->count; c_index++) {
-    corner_data *corner = &corners->corners[c_index];
-    // return POL_LOCALIZATION_SUCCESS;
+  pol_segments_t segments;
+  segments.count = 0;
+
+  for (int c1_index = 0; c1_index < corners->count; c1_index++) {
+    corner_data *corner1 = &corners->corners[c1_index];
+
+    for (int c2_index = c1_index + 1; c2_index < corners->count; c2_index++) {
+      corner_data *corner2 = &corners->corners[c2_index];
+
+      if (are_equals_two_segments(&corner1->segment1, &corner2->segment1)) {
+        // corner1->segment1 == corner2->segment1
+        segments.segments[segments.count].segment = corner1->segment1;
+        segments.segments[segments.count].corner1 = *corner1;
+        segments.segments[segments.count].corner2 = *corner2;
+        segments.count = segments.count + 1;
+      } else if (are_equals_two_segments(&corner1->segment2, &corner2->segment2)) {
+        // corner1->segment2 == corner2->segment2
+        segments.segments[segments.count].segment = corner1->segment2;
+        segments.segments[segments.count].corner1 = *corner1;
+        segments.segments[segments.count].corner2 = *corner2;
+        segments.count = segments.count + 1;
+      } else if (are_equals_two_segments(&corner1->segment1, &corner2->segment2)) {
+        // corner1->segment1 == corner2->segment2
+        segments.segments[segments.count].segment = corner1->segment1;
+        segments.segments[segments.count].corner1 = *corner1;
+        segments.segments[segments.count].corner2 = *corner2;
+        segments.count = segments.count + 1;
+      } else if (are_equals_two_segments(&corner1->segment2, &corner2->segment1)) {
+        // corner1->segment2 == corner2->segment1
+        segments.segments[segments.count].segment = corner1->segment1;
+        segments.segments[segments.count].corner1 = *corner1;
+        segments.segments[segments.count].corner2 = *corner2;
+        segments.count = segments.count + 1;
+      }
+    }
   }
+  // TODO
+  // return POL_LOCALIZATION_SUCCESS;
+
+  printf("Number of segments found %d \n", segments.count);
 
   return POL_LOCALIZATION_FAIL;
 }
@@ -126,7 +171,7 @@ void sort_map_lines_as_polygon()
         }
       }
     }
-    
+
     if (!success) {
       printf("Unexpected failure pol_localization sort\n");
       return;
