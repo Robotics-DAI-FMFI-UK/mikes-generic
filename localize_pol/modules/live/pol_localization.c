@@ -71,6 +71,21 @@ int pol_segment_comparator(const void *a, const void *b) {
   return angleA - angleB;
 }
 
+int get_number_of_combinations_items_to_holes(int items, int holes, int start)
+{
+  if (items == 0) {
+    return 1;
+  }
+
+  int total = 0;
+
+  for (int index = start; index < holes; index++) {
+    total = total + get_count(items - 1, holes, index);
+  }
+
+  return total;
+}
+
 int get_pose_base_on_corners_and_heading(corners_data *corners, base_data_type *base_data, pose_type *result_pose)
 {
   pol_segments_t found_segments;
@@ -109,6 +124,43 @@ int get_pose_base_on_corners_and_heading(corners_data *corners, base_data_type *
   // return POL_LOCALIZATION_SUCCESS;
 
   qsort(found_segments.segments, found_segments.count, sizeof(pol_segment_t), pol_segment_comparator);
+
+  int numberOfLines = map_lines_count; // our N
+  int numberOfSegments = found_segments.count; // our M
+
+  int numberOfItems = numberOfLines - 1;
+  int numberOfHoles = numberOfSegments + 1;
+
+  int numberOfCombinations = get_number_of_combinations_items_to_holes(numberOfItems, numberOfHoles, 0);
+
+  int combinations[numberOfCombinations][numberOfHoles] = {0};
+
+  combinations[0][0] = numberOfItems;
+  for (int index = 1; index < numberOfCombinations; index++) {
+
+    // Create copy of line before
+    for (int copy_i = 0; copy_i < numberOfHoles; copy_i++) {
+      combinations[index][copy_i] = combinations[index - 1][copy_i];
+    }
+
+    // Find first not zero index before last index
+    int lastNonEptyIndex = numberOfHoles - 2;
+    while (lastNonEptyIndex > -1 && combinations[index][lastNonEptyIndex] == 0) {
+      lastNonEptyIndex -= 1;
+    }
+
+    int lastValue = combinations[index][numberOfHoles - 1];
+
+    combinations[index][lastNonEptyIndex] -= 1;
+    combinations[index][numberOfHoles - 1] = 0;
+    combinations[index][lastNonEptyIndex + 1] = 1 + lastValue;
+
+    printf("Combination ");
+    for (int i = 0; i < numberOfHoles; i++) {
+      printf("%3d ", combinations[index][i]);
+    }
+    printf("\n");
+  }
 
   //for (int index_s = 0; index_s < found_segments.count; index_s++) {
     //printf("Sorted segment %10.4f %10.4f %10.4f %10.4f\n", found_segments.segments[index_s].segment.start.x, found_segments.segments[index_s].segment.start.y, found_segments.segments[index_s].segment.end.x, found_segments.segments[index_s].segment.end.y);
