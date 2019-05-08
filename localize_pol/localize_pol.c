@@ -19,10 +19,7 @@
 #include "core/config_mikes.h"
 
 void init_modules()
-{
-  init_line_map(mikes_config.line_map_file);
-  init_pol_localization();
-  
+{ 
   init_base_module();
   init_ncurses_control();
   init_ui();
@@ -34,6 +31,8 @@ void init_modules()
   init_tim_segment();
   init_tim_corner();
 
+  init_line_map(mikes_config.line_map_file);
+  init_pol_localization();
   // TODO add show in map
 
   init_x_base(400);

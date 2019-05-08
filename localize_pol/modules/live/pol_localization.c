@@ -9,8 +9,6 @@
 #include "../../../mikes-common/bites/mikes.h"
 #include "../../../mikes-common/bites/util.h"
 #include "../../../mikes-common/modules/passive/mikes_logs.h"
-#include "../../../mikes-common/modules/live/tim_hough_transform.h"
-#include "../../../mikes-common/modules/live/tim_corner.h"
 #include "../../../mikes-common/modules/live/base_module.h"
 #include "../../../mikes-common/modules/live/navig.h"
 #include "../../../mikes-common/modules/passive/line_map.h"
@@ -36,8 +34,8 @@ static int online;
 
 int are_equals_two_segments(segment_data *segment1, segment_data *segment2)
 {
-  if ((segment1->start.x == segment2.start.x && segment1->start.y == segment2->start.y && segment1->end.x == segment2->end.x && segment1->end.y == segment2->end.y) ||
-      (segment1->start.x == segment2.end.x && segment1->start.y == segment2->end.y && segment1->start.x == segment2->start.x && segment1->end.y == segment2->end.y)) {
+  if ((segment1->start.x == segment2->start.x && segment1->start.y == segment2->start.y && segment1->end.x == segment2->end.x && segment1->end.y == segment2->end.y) ||
+      (segment1->start.x == segment2->end.x && segment1->start.y == segment2->end.y && segment1->start.x == segment2->start.x && segment1->end.y == segment2->end.y)) {
     return 1;
   }
   return 0;
@@ -84,7 +82,7 @@ int get_pose_base_on_corners_and_heading(corners_data *corners, base_data_type *
   // TODO
   // return POL_LOCALIZATION_SUCCESS;
 
-  printf("Number of segments found %d \n", segments.count);
+  // printf("Number of segments found %d \n", segments.count);
 
   return POL_LOCALIZATION_FAIL;
 }

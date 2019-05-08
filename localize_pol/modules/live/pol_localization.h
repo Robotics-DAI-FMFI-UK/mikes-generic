@@ -4,6 +4,8 @@
 #include <stdint.h>
 
 #include "../../../mikes-common/modules/passive/pose.h"
+#include "../../../mikes-common/modules/live/tim_hough_transform.h"
+#include "../../../mikes-common/modules/live/tim_corner.h"
 
 #define POL_LOCALIZATION_FAIL    0
 #define POL_LOCALIZATION_SUCCESS 1
