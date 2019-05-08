@@ -42,7 +42,7 @@ int are_equals_two_segments(segment_data *segment1, segment_data *segment2)
 }
 
 int pol_segment_comparator(const void *a, const void *b) {
-   return ((*(pol_segment_t*)b).line.angle - (*(pol_segment_t*)a).line.angle);
+   return ((*(pol_segment_t*)b).segment.line.angle - (*(pol_segment_t*)a).segment.line.angle);
 }
 
 int get_pose_base_on_corners_and_heading(corners_data *corners, base_data_type *base_data, pose_type *result_pose)
@@ -184,6 +184,7 @@ void sort_map_lines_as_polygon()
   }
 
   memcpy(map_lines, sorted_lines, sizeof(line) * map_lines_count);
+  print_sorted_map_lines();
 }
 
 void print_sorted_map_lines()
