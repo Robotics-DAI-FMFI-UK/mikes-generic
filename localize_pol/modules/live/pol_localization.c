@@ -42,8 +42,8 @@ int are_equals_two_segments(segment_data *segment1, segment_data *segment2)
 }
 
 int pol_segment_comparator(const void *a, const void *b) {
-  segment_data segmentA = ((*(pol_segment_t*)a).segment;
-  segment_data segmentB = ((*(pol_segment_t*)b).segment;
+  segment_data segmentA = (*(pol_segment_t*)a).segment;
+  segment_data segmentB = (*(pol_segment_t*)b).segment;
 
   vector_2d vectorA;
   vector_from_two_points(&segmentA.start, &segmentA.end, &vectorA);
@@ -110,9 +110,9 @@ int get_pose_base_on_corners_and_heading(corners_data *corners, base_data_type *
 
   qsort(found_segments.segments, found_segments.count, sizeof(pol_segment_t), pol_segment_comparator);
 
-  for (int index_s = 0; index_s < found_segments.count; index_s++) {
-    printf("Sorted segment %10.4f %10.4f %10.4f %10.4f\n", found_segments.segments[index_s].segment.start.x, found_segments.segments[index_s].segment.start.y, found_segments.segments[index_s].segment.end.x, found_segments.segments[index_s].segment.end.y);
-  }
+  //for (int index_s = 0; index_s < found_segments.count; index_s++) {
+    //printf("Sorted segment %10.4f %10.4f %10.4f %10.4f\n", found_segments.segments[index_s].segment.start.x, found_segments.segments[index_s].segment.start.y, found_segments.segments[index_s].segment.end.x, found_segments.segments[index_s].segment.end.y);
+  //}
 
   // printf("Number of segments found %d \n", segments.count);
 
@@ -209,7 +209,7 @@ void sort_map_lines_as_polygon()
   }
 
   memcpy(map_lines, sorted_lines, sizeof(line) * map_lines_count);
-  print_sorted_map_lines();
+  //print_sorted_map_lines();
 }
 
 void print_sorted_map_lines()
