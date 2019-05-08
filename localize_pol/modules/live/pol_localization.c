@@ -29,8 +29,8 @@ static line map_lines[MAX_LINES_IN_LINE_MAP];
 
 static pol_localization_t   localization_data_local;
 
-static rect_localization_receive_data_callback  callbacks[MAX_POL_LOCALIZATION_CALLBACKS];
-static int                                      callbacks_count;
+static pol_localization_receive_data_callback  callbacks[MAX_POL_LOCALIZATION_CALLBACKS];
+static int                                     callbacks_count;
 
 static int online;
 
@@ -88,6 +88,7 @@ void sort_map_lines_as_polygon()
 
   line sorted_lines[map_lines_count];
   int lines_used[map_lines_count];
+  memset(lines_used, 0, sizeof(int) * map_lines_count);
   int sorted = 0;
 
   sorted_lines[0] = map_lines[0];
@@ -96,9 +97,10 @@ void sort_map_lines_as_polygon()
 
   while (sorted < map_lines_count) {
     line last_line = sorted_lines[sorted - 1];
+    int success = 0;
 
     for (int line_i = 0; line_i < map_lines_count; line_i++) {
-      if (lines_used[line_i] == 0) {
+      if (!lines_used[line_i]) {
         line courent_line = map_lines[line_i];
 
         if (last_line.x2 == courent_line.x1 && last_line.y2 == courent_line.y1) {
@@ -107,7 +109,9 @@ void sort_map_lines_as_polygon()
           sorted_lines[sorted].x2 = courent_line.x2;
           sorted_lines[sorted].y2 = courent_line.y2;
           sorted_lines[sorted].id = courent_line.id;
+          lines_used[line_i] = 1;
           sorted++;
+          success = 1;
           break;
         } else if (last_line.x2 == courent_line.x2 && last_line.y2 == courent_line.y2) {
           sorted_lines[sorted].x1 = courent_line.x2;
@@ -115,20 +119,27 @@ void sort_map_lines_as_polygon()
           sorted_lines[sorted].x2 = courent_line.x1;
           sorted_lines[sorted].y2 = courent_line.y1;
           sorted_lines[sorted].id = courent_line.id;
+          lines_used[line_i] = 1;
           sorted++;
+          success = 1;
           break;
         }
       }
     }
-
-    printf("Unexpected failure pol_localization sort\n");
-    return;
+    
+    if (!success) {
+      printf("Unexpected failure pol_localization sort\n");
+      return;
+    }
   }
 
   memcpy(map_lines, sorted_lines, sizeof(line) * map_lines_count);
+}
 
+void print_sorted_map_lines()
+{
   for (int index_l = 0; index_l < map_lines_count; index_l++) {
-    printf("Line X1: %10.4f Y1: %10.4f X2: %10.4f Y2: %10.4f\n", sorted_lines[index_l].x1, sorted_lines[index_l].y1, sorted_lines[index_l].x2, sorted_lines[index_l].y2);
+    printf("Line X1: %10.4f Y1: %10.4f X2: %10.4f Y2: %10.4f\n", map_lines[index_l].x1, map_lines[index_l].y1, map_lines[index_l].x2, map_lines[index_l].y2);
   }
 }
 
@@ -179,7 +190,7 @@ void shutdown_pol_localization()
 // ----------------------------------------------------------------
 // ----------------------------------------------------------------
 
-void register_pol_localization_callback(rect_localization_receive_data_callback callback)
+void register_pol_localization_callback(pol_localization_receive_data_callback callback)
 {
   if (!online) return;
 
@@ -191,7 +202,7 @@ void register_pol_localization_callback(rect_localization_receive_data_callback 
   callbacks[callbacks_count++] = callback;
 }
 
-void unregister_pol_localization_callback(rect_localization_receive_data_callback callback)
+void unregister_pol_localization_callback(pol_localization_receive_data_callback callback)
 {
   if (!online) return;
 
