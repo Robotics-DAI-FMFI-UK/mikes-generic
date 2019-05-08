@@ -28,6 +28,7 @@ SRCS=$(COMMON_DIR)/modules/passive/mikes_logs.c \
      $(COMMON_DIR)/modules/passive/x_line_map.c \
      localize_pol.c \
      core/config_mikes.c \
+     modules/live/pol_localization.c \
      ui.c
 
 OPTIMIZE=-O0

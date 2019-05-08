@@ -30,22 +30,21 @@ void init_modules()
   init_tim_segment();
   init_tim_corner();
 
+  init_line_map(mikes_config.line_map_file);
+  init_pol_localization();
+  // TODO add show in map
+
   init_x_base(400);
   init_x_tim571(7000, 400);
 
-  init_line_map(mikes_config.line_map_file);
   init_x_line_map(mikes_config.line_map_file, 600, 350);
-
-  int line_count;
-  line lines[MAX_LINES_IN_LINE_MAP];
-  get_line_map_data(lines, &line_count);
-
-  printf("Line count: %d Line index 1 x1: %f\n", line_count, lines[1].x1);
 }
 
 void shutdown_modules()
 {
   shutdown_x_line_map();
+
+  shutdown_pol_localization();
 
   shutdown_tim_corner();
   shutdown_tim_segment();
