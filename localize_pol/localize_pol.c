@@ -12,6 +12,7 @@
 #include "../mikes-common/modules/live/line_filter.h"
 #include "../mikes-common/modules/live/tim_segment.h"
 #include "../mikes-common/modules/live/tim_corner.h"
+#include "../mikes-common/modules/passive/line_map.h"
 #include "../mikes-common/modules/passive/x_line_map.h"
 
 #include "core/config_mikes.h"
@@ -32,7 +33,14 @@ void init_modules()
   init_x_base(400);
   init_x_tim571(7000, 400);
 
+  init_line_map(mikes_config.line_map_file);
   init_x_line_map(mikes_config.line_map_file, 600, 350);
+
+  int line_count;
+  line lines[MAX_LINES_IN_LINE_MAP];
+  get_line_map_data(lines, &line_count);
+
+  printf("Line count: %d Line index 1 x1: %f\n", line_count, lines[1].x1);
 }
 
 void shutdown_modules()

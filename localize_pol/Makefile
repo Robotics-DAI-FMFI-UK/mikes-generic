@@ -24,6 +24,7 @@ SRCS=$(COMMON_DIR)/modules/passive/mikes_logs.c \
      $(COMMON_DIR)/bites/math_2d.c \
      $(COMMON_DIR)/bites/corner.c \
      $(COMMON_DIR)/bites/segment.c \
+     $(COMMON_DIR)/modules/passive/line_map.c \
      $(COMMON_DIR)/modules/passive/x_line_map.c \
      localize_pol.c \
      core/config_mikes.c \
