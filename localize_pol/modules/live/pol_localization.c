@@ -397,33 +397,22 @@ int get_pose_base_on_corners_and_heading(corners_data *corners, base_data_type *
     double angle1 = angle_from_axis_x(&v_corner_segment_1);
     double angle2 = angle_from_axis_x(&v_corner_segment_2);
 
-    corner_data segment_left_corner;
-    corner_data segment_right_corner;
-
     double segment_left_distance;
     double segment_right_distance;
 
     if ((angle1 < ANGLE_MAXIMUM && angle2 < ANGLE_MAXIMUM) || (angle1 >= ANGLE_MAXIMUM && angle2 >= ANGLE_MAXIMUM)) {
       if (angle1 > angle2) {
-        segment_left_corner = found_segment->corner1;
-        segment_right_corner = found_segment->corner2;
         segment_left_distance = get_vector_length(&v_corner_segment_1);
         segment_right_distance = get_vector_length(&v_corner_segment_2);
       } else {
-        segment_left_corner = found_segment->corner2;
-        segment_right_corner = found_segment->corner1;
         segment_left_distance = get_vector_length(&v_corner_segment_2);
         segment_right_distance = get_vector_length(&v_corner_segment_1);
       }
     } else {
       if (angle1 < ANGLE_MAXIMUM) {
-        segment_left_corner = found_segment->corner1;
-        segment_right_corner = found_segment->corner2;
         segment_left_distance = get_vector_length(&v_corner_segment_1);
         segment_right_distance = get_vector_length(&v_corner_segment_2);
       } else {
-        segment_left_corner = found_segment->corner2;
-        segment_right_corner = found_segment->corner1;
         segment_left_distance = get_vector_length(&v_corner_segment_2);
         segment_right_distance = get_vector_length(&v_corner_segment_1);
       }
@@ -501,14 +490,16 @@ int get_pose_base_on_corners_and_heading(corners_data *corners, base_data_type *
   center_single_point.y = center_single_point.y / single_points_length;
 
   int double_points_used = 0;
-  for (int index = 0; index < double_points_in_polygon;) {
+  for (int index = 0; index < double_points_length;) {
     vector_2d difference_vector_1;
     vector_from_two_points(&center_single_point, &double_points_in_polygon[index], &difference_vector_1);
+    double difference_vector_1_length = get_vector_length(&difference_vector_1);
 
     vector_2d difference_vector_2;
     vector_from_two_points(&center_single_point, &double_points_in_polygon[index + 1], &difference_vector_2);
+    double difference_vector_2_length = get_vector_length(&difference_vector_2);
 
-    if (difference_vector_1 < difference_vector_2) {
+    if (difference_vector_1_length < difference_vector_2_length) {
       center_final_point.x += single_points_in_polygon[index].x;
       center_final_point.y += single_points_in_polygon[index].y;
     } else {
@@ -523,7 +514,7 @@ int get_pose_base_on_corners_and_heading(corners_data *corners, base_data_type *
   center_final_point.x = center_final_point.x / (single_points_length + double_points_used);
   center_final_point.y = center_final_point.y / (single_points_length + double_points_used);
 
-  printf("Found final localization X: %6.4 Y: %6.4", center_final_point.x, center_final_point.y);
+  printf("Found final localization X: %6.4f Y: %6.4f\n", center_final_point.x, center_final_point.y);
 
   return POL_LOCALIZATION_SUCCESS;
 }
