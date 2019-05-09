@@ -562,8 +562,7 @@ int get_pose_base_on_corners_and_heading(corners_data *corners, base_data_type *
   center_final_point.x = center_final_point.x / (single_points_length + double_points_used);
   center_final_point.y = center_final_point.y / (single_points_length + double_points_used);
 
-  sleep(5);
-  printf("Found final localization X: %6.4f Y: %6.4f\n", center_final_point.x, center_final_point.y);
+  // printf("Found final localization X: %6.4f Y: %6.4f\n", center_final_point.x, center_final_point.y);
 
   for (int index = 0; index < single_points_length; index++) {
     vector_2d corner_v;
@@ -575,7 +574,7 @@ int get_pose_base_on_corners_and_heading(corners_data *corners, base_data_type *
     double robot_angle_to_corner = math_azimuth_to_robot_azimuth(angle_from_axis_x(&corner_tim_v));
 
     double alpha = normAlpha(map_corner_angle - robot_angle_to_corner);
-    printf("Found potencional heading %4.4f\n", alpha);
+    // printf("Found potencional heading %4.4f\n", alpha);
 
     result_pose->heading = alpha * RADIAN;
   }
