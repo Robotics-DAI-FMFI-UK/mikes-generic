@@ -384,6 +384,7 @@ int get_pose_base_on_corners_and_heading(corners_data *corners, base_data_type *
   point_2d potencial_locations_2_real[found_segments.count];
   point_2d potencial_locations_2_sensor[found_segments.count];
   int potencial_length = 0;
+  sleep(5);
 
   for (int index = 0; index < found_segments.count; index++) {
     int line_index = positions[index];
@@ -465,9 +466,9 @@ int get_pose_base_on_corners_and_heading(corners_data *corners, base_data_type *
       potencial_length++;
     }
 
-    // printf("Input X1: %6.4f Y1: %6.4f R1 %6.4f X2: %6.4f Y2: %6.4f R2 %6.4f Result X1: %6.4f Y1: %6.4f X2: %6.4f Y2: %6.4f\n",
-    //   c1.x, c1.y, c1.r, c2.x, c2.y, c2.r,
-    //   potencial_locations_1[potencial_length - 1].x, potencial_locations_1[potencial_length - 1].y, potencial_locations_2[potencial_length - 1].x, potencial_locations_2[potencial_length - 1].y);
+     printf("Input X1: %6.4f Y1: %6.4f R1 %6.4f X2: %6.4f Y2: %6.4f R2 %6.4f Result X1: %6.4f Y1: %6.4f X2: %6.4f Y2: %6.4f\n",
+       c1.x, c1.y, c1.r, c2.x, c2.y, c2.r,
+       potencial_locations_1[potencial_length - 1].x, potencial_locations_1[potencial_length - 1].y, potencial_locations_2[potencial_length - 1].x, potencial_locations_2[potencial_length - 1].y);
   }
 
   point_2d single_points_in_polygon[found_segments.count];
@@ -482,7 +483,7 @@ int get_pose_base_on_corners_and_heading(corners_data *corners, base_data_type *
 
   for (int index = 0; index < potencial_length; index++) {
     int first_in_polygon = is_in_polygon(map_verticles, number_of_verticles, &potencial_locations_1[index]);
-    int second_in_polygon = is_in_polygon(map_verticles, number_of_verticles, &potencial_locations_1[index]);
+    int second_in_polygon = is_in_polygon(map_verticles, number_of_verticles, &potencial_locations_2[index]);
 
     if (first_in_polygon && !second_in_polygon) {
       single_points_in_polygon[single_points_length] = potencial_locations_1[index];
