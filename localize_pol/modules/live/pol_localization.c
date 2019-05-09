@@ -18,6 +18,7 @@
 
 #define LINE_TO_SEGMENT_MULTIPLIER 10.0
 #define ANGLE_MAXIMUM 300
+#define MAX_ACCEPTABLE_DIFFERENCE 150
 
 static pthread_mutex_t      pol_localization_lock;
 static int                  fd[2];
@@ -369,9 +370,9 @@ int get_pose_base_on_corners_and_heading(corners_data *corners, base_data_type *
   int positions[found_segments.count];
   get_position_representation_from_combination(combined_segments, combinations[best_combination_i], numberOfCombinedSegments, best_start, positions);
 
-  point_2d potencial_locations[found_segments.count];
-
-  sleep(5);
+  point_2d potencial_locations_1[found_segments.count];
+  point_2d potencial_locations_2[found_segments.count];
+  int potencial_length = 0;
 
   for (int index = 0; index < found_segments.count; index++) {
     int line_index = positions[index];
@@ -440,24 +441,91 @@ int get_pose_base_on_corners_and_heading(corners_data *corners, base_data_type *
       .r = segment_right_distance / LINE_TO_SEGMENT_MULTIPLIER
     };
 
-    point_2d intersection1;
-    point_2d intersection2;
-    two_circles_intersection(&c1, &c2, &intersection1, &intersection2);
 
-    printf("Input X1: %6.4f Y1: %6.4f R1 %6.4f X2: %6.4f Y2: %6.4f R2 %6.4f Result X1: %6.4f Y1: %6.4f X2: %6.4f Y2: %6.4f\n",
-      c1.x, c1.y, c1.r, c2.x, c2.y, c2.r,
-      intersection1.x, intersection1.y, intersection2.x, intersection2.y);
-    // TODO use distance from corners from segment to make circles from wall endpoints
-    // Compute what point is in polygon and use it
-    // store it
+    if (two_circles_intersection(&c1, &c2, &potencial_locations_1[potencial_length], &potencial_locations_2[potencial_length])) {
+      potencial_length++;
+    }
+
+    // printf("Input X1: %6.4f Y1: %6.4f R1 %6.4f X2: %6.4f Y2: %6.4f R2 %6.4f Result X1: %6.4f Y1: %6.4f X2: %6.4f Y2: %6.4f\n",
+    //   c1.x, c1.y, c1.r, c2.x, c2.y, c2.r,
+    //   potencial_locations_1[potencial_length - 1].x, potencial_locations_1[potencial_length - 1].y, potencial_locations_2[potencial_length - 1].x, potencial_locations_2[potencial_length - 1].y);
   }
 
-  // TODO get middle position of all potencial positions
+  point_2d single_points_in_polygon[found_segments.count];
+  int single_points_length = 0;
 
-  // TODO get position
-  // return POL_LOCALIZATION_SUCCESS;
+  point_2d double_points_in_polygon[found_segments.count * 2];
+  int double_points_length = 0;
 
-  return POL_LOCALIZATION_FAIL;
+  for (int index = 0; index < potencial_length; index++) {
+    int first_in_polygon = is_in_polygon(map_verticles, number_of_verticles, &potencial_locations_1[index]);
+    int second_in_polygon = is_in_polygon(map_verticles, number_of_verticles, &potencial_locations_1[index]);
+
+    if (first_in_polygon && !second_in_polygon) {
+      single_points_in_polygon[single_points_length++] = potencial_locations_1[index];
+    } else if (second_in_polygon && !first_in_polygon) {
+      single_points_in_polygon[single_points_length++] = potencial_locations_2[index];
+    } else {
+      double_points_in_polygon[double_points_length++] = potencial_locations_1[index];
+      double_points_in_polygon[double_points_length++] = potencial_locations_2[index];
+    }
+  }
+
+  for (int index_1 = 0; index_1 < single_points_length; index_1++) {
+    for (int index_2 = 1; index_2 < single_points_length; index_2++) {
+      vector_2d difference_vector;
+      vector_from_two_points(&single_points_in_polygon[index_1], &single_points_in_polygon[index_2], &difference_vector);
+
+      double difference_vector_length = get_vector_length(&difference_vector);
+
+      if (difference_vector_length > MAX_ACCEPTABLE_DIFFERENCE) {
+        printf("This is pretty bad boys\n");
+        return POL_LOCALIZATION_FAIL;
+      }
+    }
+  }
+
+  point_2d center_single_point = {
+    .x = 0,
+    .y = 0
+  };
+
+  for (int index = 0; index < single_points_length; index++) {
+    center_single_point.x += single_points_in_polygon[index].x;
+    center_single_point.y += single_points_in_polygon[index].y;
+  }
+
+  point_2d center_final_point = center_single_point;
+
+  center_single_point.x = center_single_point.x / single_points_length;
+  center_single_point.y = center_single_point.y / single_points_length;
+
+  int double_points_used = 0;
+  for (int index = 0; index < double_points_in_polygon;) {
+    vector_2d difference_vector_1;
+    vector_from_two_points(&center_single_point, &double_points_in_polygon[index], &difference_vector_1);
+
+    vector_2d difference_vector_2;
+    vector_from_two_points(&center_single_point, &double_points_in_polygon[index + 1], &difference_vector_2);
+
+    if (difference_vector_1 < difference_vector_2) {
+      center_final_point.x += single_points_in_polygon[index].x;
+      center_final_point.y += single_points_in_polygon[index].y;
+    } else {
+      center_final_point.x += single_points_in_polygon[index + 1].x;
+      center_final_point.y += single_points_in_polygon[index + 1].y;
+    }
+
+    double_points_used++;
+    index += 2;
+  }
+
+  center_final_point.x = center_final_point.x / (single_points_length + double_points_used);
+  center_final_point.y = center_final_point.y / (single_points_length + double_points_used);
+
+  printf("Found final localization X: %6.4 Y: %6.4", center_final_point.x, center_final_point.y);
+
+  return POL_LOCALIZATION_SUCCESS;
 }
 
 void process_all_data()
