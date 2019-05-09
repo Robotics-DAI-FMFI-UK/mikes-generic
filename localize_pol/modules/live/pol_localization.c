@@ -192,7 +192,7 @@ typedef struct point_circle_2d {
   double r;
 } circle_2d;
 
-int two_circles_intersection(point_circle_2d *c1, point_circle_2d *c2, point_2d *result1, point_2d *result2) {
+int two_circles_intersection(circle_2d *c1, circle_2d *c2, point_2d *result1, point_2d *result2) {
   double val1, val2, test;
   double D = sqrt((c1->x - c2->x) * (c1->x - c2->x) + (c1->y - c2->y) * (c1->y - c2->y));
 
@@ -367,7 +367,7 @@ int get_pose_base_on_corners_and_heading(corners_data *corners, base_data_type *
   // printf("\n");
 
   int positions[found_segments.count];
-  get_position_representation_from_combination(combined_segments, combinations[index], numberOfCombinedSegments, start, positions);
+  get_position_representation_from_combination(combined_segments, combinations[best_combination_i], numberOfCombinedSegments, best_start, positions);
 
   point_2d potencial_locations[found_segments.count];
 
@@ -400,7 +400,7 @@ int get_pose_base_on_corners_and_heading(corners_data *corners, base_data_type *
     double segment_left_distance;
     double segment_right_distance;
 
-    if (angle1 < ANGLE_MAXIMUM && angle2 < ANGLE_MAXIMUM || angle1 >= ANGLE_MAXIMUM && angle2 >= ANGLE_MAXIMUM) {
+    if ((angle1 < ANGLE_MAXIMUM && angle2 < ANGLE_MAXIMUM) || (angle1 >= ANGLE_MAXIMUM && angle2 >= ANGLE_MAXIMUM)) {
       if (angle1 > angle2) {
         segment_left_corner = found_segment->corner1;
         segment_right_corner = found_segment->corner2;
@@ -442,7 +442,7 @@ int get_pose_base_on_corners_and_heading(corners_data *corners, base_data_type *
     point_2d intersection2;
     two_circles_intersection(&c1, &c2, &intersection1, &intersection2);
 
-    ptrintf("Result X1: %6.4f Y1: %6.4f X2: %6.4f Y2: %6.4f\n", intersection1.x, intersection1.y, intersection2.x, intersection2.y);
+    printf("Result X1: %6.4f Y1: %6.4f X2: %6.4f Y2: %6.4f\n", intersection1.x, intersection1.y, intersection2.x, intersection2.y);
     sleep(5);
     // TODO use distance from corners from segment to make circles from wall endpoints
     // Compute what point is in polygon and use it
