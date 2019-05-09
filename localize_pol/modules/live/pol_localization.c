@@ -38,6 +38,28 @@ int are_equals_two_segments(segment_data *segment1, segment_data *segment2)
       (segment1->start.x == segment2->end.x && segment1->start.y == segment2->end.y && segment1->start.x == segment2->start.x && segment1->end.y == segment2->end.y)) {
     return 1;
   }
+
+  return 0;
+}
+
+int are_equals_two_corners(point_2d *corner1, point_2d *corne2)
+{
+  if (corner1->x == corner2->x && corner1->y == corner2->y) {
+    return 1;
+  }
+
+  return 0;
+}
+
+int have_common_corner(pol_segment_t *segment1, pol_segment_t *segment2)
+{
+  if (are_equals_two_corners(&segment1->corner1, &segment2->corner1) ||
+      are_equals_two_corners(&segment1->corner2, &segment2->corner2) ||
+      are_equals_two_corners(&segment1->corner1, &segment2->corner2) ||
+      are_equals_two_corners(&segment1->corner2, &segment2->corner1)) {
+    return 1;
+  }
+
   return 0;
 }
 
@@ -162,11 +184,39 @@ int get_pose_base_on_corners_and_heading(corners_data *corners, base_data_type *
     }
   }
 
+  if (found_segments.count < 1 || found_segments.count > map_lines_count) {
+    return POL_LOCALIZATION_FAIL;
+  }
+
   qsort(found_segments.segments, found_segments.count, sizeof(pol_segment_t), pol_segment_comparator);
 
-//  for (int index_s = 0; index_s < found_segments.count; index_s++) {
-//    printf("Sorted segment %10.4f %10.4f %10.4f %10.4f\n", found_segments.segments[index_s].segment.start.x, found_segments.segments[index_s].segment.start.y, found_segments.segments[index_s].segment.end.x, found_segments.segments[index_s].segment.end.y);
-//  }
+  int combined_segments[found_segments.count];
+  int combined_segments_length = 1;
+  combined_segments[combined_segments_length - 1] = 1;
+
+  for (int index = 1; index < found_segments.count; index++) {
+    pol_segment_t *segment1 = &found_segments.segments[index - 1];
+    pol_segment_t *segment2 = &found_segments.segments[index];
+
+    if (have_common_corner(segment1, segment2)) {
+      combined_segments[combined_segments_length - 1]++;
+    } else {
+      combined_segments[combined_segments_length] = 1;
+      combined_segments_length++;
+    }
+  }
+
+  printf("Combined segments result: ");
+  for (int index = 1; index < combined_segments_length; index++) {
+    printf("%3d ", combined_segments[index]);
+  }
+  printf("\n");
+
+  // TODO pracovat so spojitymi segmentami
+
+ // for (int index_s = 0; index_s < found_segments.count; index_s++) {
+ //   printf("Sorted segment %10.4f %10.4f %10.4f %10.4f\n", found_segments.segments[index_s].segment.start.x, found_segments.segments[index_s].segment.start.y, found_segments.segments[index_s].segment.end.x, found_segments.segments[index_s].segment.end.y);
+ // }
 
   int numberOfLines = map_lines_count; // our N
   int numberOfSegments = found_segments.count; // our M
@@ -212,12 +262,12 @@ int get_pose_base_on_corners_and_heading(corners_data *corners, base_data_type *
   for (int index = 0; index < numberOfCombinations; index++) {
     for (int start = 0; start < numberOfItems; start++) {
       double difference = get_difference_of_combination(&found_segments, combinations[index], numberOfHoles, start);
-//      printf("Combination difference %10.4f offset %3d: ", difference, start);
-//      for (int i = 0; i < numberOfHoles; i++) {
-//        printf("%3d ", combinations[index][i]);
-//      }
-//      printf("\n");
-//      sleep(2);
+     // printf("Combination difference %10.4f offset %3d: ", difference, start);
+     // for (int i = 0; i < numberOfHoles; i++) {
+     //   printf("%3d ", combinations[index][i]);
+     // }
+     // printf("\n");
+     // sleep(2);
       if (best_combination_difference > difference) {
         best_combination_difference = difference;
         best_combination_i = index;
@@ -226,13 +276,13 @@ int get_pose_base_on_corners_and_heading(corners_data *corners, base_data_type *
     }
   }
 
-  if (best_combination_i != -1) {
-    printf("Segments %d, Best combination difference %10.4f offset %3d: ", found_segments.count, best_combination_difference, best_start);
-    for (int i = 0; i < numberOfHoles; i++) {
-      printf("%3d ", combinations[best_combination_i][i]);
-    }
-    printf("\n");
-  }
+  // if (best_combination_i != -1) {
+  //   printf("Segments %d, Best combination difference %10.4f offset %3d: ", found_segments.count, best_combination_difference, best_start);
+  //   for (int i = 0; i < numberOfHoles; i++) {
+  //     printf("%3d ", combinations[best_combination_i][i]);
+  //   }
+  //   printf("\n");
+  // }
 
   // TODO get position
   // return POL_LOCALIZATION_SUCCESS;
