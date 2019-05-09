@@ -267,6 +267,7 @@ int get_pose_base_on_corners_and_heading(corners_data *corners, base_data_type *
   }
 
   if (found_segments.count < 1 || found_segments.count > map_lines_count) {
+    printf("FAIL NOT ENOUGH SEGMENTS\n");
     return POL_LOCALIZATION_FAIL;
   }
 
@@ -357,6 +358,7 @@ int get_pose_base_on_corners_and_heading(corners_data *corners, base_data_type *
   }
 
   if (best_combination_i == -1) {
+    printf("FAIL NOT BEST COMBINATION\n");
     return POL_LOCALIZATION_FAIL;
   }
 
@@ -505,6 +507,7 @@ int get_pose_base_on_corners_and_heading(corners_data *corners, base_data_type *
   }
 
   if (!single_points_length) {
+    printf("FAIL NOT SINGLE POINT\n");
     return POL_LOCALIZATION_FAIL;
   }
 
