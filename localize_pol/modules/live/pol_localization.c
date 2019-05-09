@@ -91,13 +91,13 @@ int get_number_of_combinations_items_to_holes(int items, int holes, int start)
 double get_difference_between_segment_and_line(segment_data *segment, line *wall)
 {
   point_2d start = {
-    .x = wall.x1 * LINE_TO_SEGMENT_MULTIPLIER,
-    .y = wall.y1 * LINE_TO_SEGMENT_MULTIPLIER
+    .x = wall->x1 * LINE_TO_SEGMENT_MULTIPLIER,
+    .y = wall->y1 * LINE_TO_SEGMENT_MULTIPLIER
   };
 
   point_2d end = {
-    .x = wall.x1 * LINE_TO_SEGMENT_MULTIPLIER,
-    .y = wall.y1 * LINE_TO_SEGMENT_MULTIPLIER
+    .x = wall->x1 * LINE_TO_SEGMENT_MULTIPLIER,
+    .y = wall->y1 * LINE_TO_SEGMENT_MULTIPLIER
   };
 
   vector_2d wall_vector;
@@ -120,7 +120,7 @@ double get_difference_of_combination(pol_segments_t *found_segments, int *combin
     pol_segment_t *found_segment = &found_segments->segments[index];
     line *wall = &map_lines[line_index];
 
-    double difference += get_difference_between_segment_and_line(&found_segment->segment, wall);
+    double difference = get_difference_between_segment_and_line(&found_segment->segment, wall);
     total_difference += fabs(difference);
   }
 
@@ -164,9 +164,9 @@ int get_pose_base_on_corners_and_heading(corners_data *corners, base_data_type *
 
   qsort(found_segments.segments, found_segments.count, sizeof(pol_segment_t), pol_segment_comparator);
 
-  //for (int index_s = 0; index_s < found_segments.count; index_s++) {
-    //printf("Sorted segment %10.4f %10.4f %10.4f %10.4f\n", found_segments.segments[index_s].segment.start.x, found_segments.segments[index_s].segment.start.y, found_segments.segments[index_s].segment.end.x, found_segments.segments[index_s].segment.end.y);
-  //}
+//  for (int index_s = 0; index_s < found_segments.count; index_s++) {
+//    printf("Sorted segment %10.4f %10.4f %10.4f %10.4f\n", found_segments.segments[index_s].segment.start.x, found_segments.segments[index_s].segment.start.y, found_segments.segments[index_s].segment.end.x, found_segments.segments[index_s].segment.end.y);
+//  }
 
   int numberOfLines = map_lines_count; // our N
   int numberOfSegments = found_segments.count; // our M
@@ -212,6 +212,12 @@ int get_pose_base_on_corners_and_heading(corners_data *corners, base_data_type *
   for (int index = 0; index < numberOfCombinations; index++) {
     for (int start = 0; start < numberOfItems; start++) {
       double difference = get_difference_of_combination(&found_segments, combinations[index], numberOfHoles, start);
+      printf("Combination difference %10.4f offset %3d: ", difference, start);
+      for (int i = 0; i < numberOfHoles; i++) {
+        printf("%3d ", combinations[index][i]);
+      }
+      printf("\n");
+      sleep(2);
       if (best_combination_difference > difference) {
         best_combination_difference = difference;
         best_combination_i = index;
@@ -220,13 +226,13 @@ int get_pose_base_on_corners_and_heading(corners_data *corners, base_data_type *
     }
   }
 
-  if (best_combination_i != -1) {
-    printf("Best combination difference %10.4f offset %3d: ", best_combination_difference, best_start);
-    for (int i = 0; i < numberOfHoles; i++) {
-     printf("%3d ", combinations[best_combination_i][i]);
-    }
-    printf("\n");
-  }
+//  if (best_combination_i != -1) {
+//    printf("Best combination difference %10.4f offset %3d: ", best_combination_difference, best_start);
+//    for (int i = 0; i < numberOfHoles; i++) {
+//     printf("%3d ", combinations[best_combination_i][i]);
+//    }
+//    printf("\n");
+//  }
 
   // TODO get position
   // return POL_LOCALIZATION_SUCCESS;
@@ -324,7 +330,7 @@ void sort_map_lines_as_polygon()
   }
 
   memcpy(map_lines, sorted_lines, sizeof(line) * map_lines_count);
-  //print_sorted_map_lines();
+//  print_sorted_map_lines();
 }
 
 void print_sorted_map_lines()
