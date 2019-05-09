@@ -90,7 +90,7 @@ int pol_segment_comparator(const void *a, const void *b) {
   double angleA = angle_from_axis_x(&vectorMiddleA);
   double angleB = angle_from_axis_x(&vectorMiddleB);
 
-  return angleA - angleB;
+  return angleB - angleA;
 }
 
 int get_number_of_combinations_items_to_holes(int items, int holes, int start)
@@ -217,9 +217,9 @@ int get_pose_base_on_corners_and_heading(corners_data *corners, base_data_type *
   // }
   // printf("\n");
 
- // for (int index_s = 0; index_s < found_segments.count; index_s++) {
- //   printf("Sorted segment %10.4f %10.4f %10.4f %10.4f\n", found_segments.segments[index_s].segment.start.x, found_segments.segments[index_s].segment.start.y, found_segments.segments[index_s].segment.end.x, found_segments.segments[index_s].segment.end.y);
- // }
+  // for (int index_s = 0; index_s < found_segments.count; index_s++) {
+  //   printf("Sorted segment %10.4f %10.4f %10.4f %10.4f\n", found_segments.segments[index_s].segment.start.x, found_segments.segments[index_s].segment.start.y, found_segments.segments[index_s].segment.end.x, found_segments.segments[index_s].segment.end.y);
+  // }
 
   int numberOfLines = map_lines_count; // our N
   int numberOfCombinedSegments = combined_segments_length; // our M
@@ -343,7 +343,8 @@ void rotate_line_points_around_x_axis()
 {
   for (int index = 0; index < map_lines_count; index++) {
     line *wall = &map_lines[index];
-    wall->y = -wall->y;
+    wall->y1 = -wall->y1;
+    wall->y2 = -wall->y2;
   }
 }
 
@@ -399,7 +400,7 @@ void sort_map_lines_as_polygon()
   }
 
   memcpy(map_lines, sorted_lines, sizeof(line) * map_lines_count);
-  rotate_line_points_around_x_axis();
+//  rotate_line_points_around_x_axis();
   print_sorted_map_lines();
 }
 
