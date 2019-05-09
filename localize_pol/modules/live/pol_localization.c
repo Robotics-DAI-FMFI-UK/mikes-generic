@@ -25,6 +25,9 @@ static base_data_type       base_data_local_copy;
 static int map_lines_count;
 static line map_lines[MAX_LINES_IN_LINE_MAP];
 
+static int number_of_verticles;
+static point_2d map_verticles[MAX_LINES_IN_LINE_MAP];
+
 static pol_localization_t   localization_data_local;
 
 static pol_localization_receive_data_callback  callbacks[MAX_POL_LOCALIZATION_CALLBACKS];
@@ -154,6 +157,19 @@ double get_difference_of_combination(pol_segments_t *found_segments, int *combin
   return total_difference;
 }
 
+int is_in_polygon(point_2d *verticles, int length, point_2d *test)
+{
+  int i, j, c = 0;
+  for (i = 0, j = length - 1; i < length; j = i++) {
+    if ( ((verticles[i].y > test->y) != (verticles[j].y > test->y)) &&
+          (test->x < (verticles[j].x - verticles[i].x) * (test->y - verticles[i].y) / (verticles[j].y - verticles[i].y) + verticles[i].x) ) {
+      c = !c;
+    }
+  }
+
+  return c;
+}
+
 int get_pose_base_on_corners_and_heading(corners_data *corners, base_data_type *base_data, pose_type *result_pose)
 {
   pol_segments_t found_segments;
@@ -279,14 +295,18 @@ int get_pose_base_on_corners_and_heading(corners_data *corners, base_data_type *
     }
   }
 
-  if (best_combination_i != -1) {
-    printf("Segments %3d, Combined to %3d, Best combination difference %10.4f offset %3d: ",
-          found_segments.count, combined_segments_length, best_combination_difference, best_start);
-    for (int i = 0; i < numberOfHoles; i++) {
-      printf("%3d ", combinations[best_combination_i][i]);
-    }
-    printf("\n");
+  if (best_combination_i == -1) {
+    return POL_LOCALIZATION_FAIL;
   }
+
+  // printf("Segments %3d, Combined to %3d, Best combination difference %10.4f offset %3d: ",
+  //       found_segments.count, combined_segments_length, best_combination_difference, best_start);
+  // for (int i = 0; i < numberOfHoles; i++) {
+  //   printf("%3d ", combinations[best_combination_i][i]);
+  // }
+  // printf("\n");
+
+  // TODO dostat poziciu z namapovanych udajov
 
   // TODO get position
   // return POL_LOCALIZATION_SUCCESS;
@@ -348,6 +368,15 @@ void rotate_line_points_around_x_axis()
   }
 }
 
+void print_sorted_verticles()
+{
+  printf("Verticles ");
+  for (int index = 0; index < number_of_verticles; index++) {
+    printf("X: %10.4f Y: %10.4f ", map_verticles[index].x, map_verticles[index].y);
+  }
+  printf("\n");
+}
+
 void sort_map_lines_as_polygon()
 {
   if (map_lines_count < 1) return;
@@ -357,8 +386,8 @@ void sort_map_lines_as_polygon()
   memset(lines_used, 0, sizeof(int) * map_lines_count);
   int sorted = 0;
 
-  sorted_lines[0] = map_lines[0];
-  lines_used[0] = 1;
+  sorted_lines[sorted] = map_lines[sorted];
+  lines_used[sorted] = 1;
   sorted++;
 
   while (sorted < map_lines_count) {
@@ -375,19 +404,19 @@ void sort_map_lines_as_polygon()
           sorted_lines[sorted].x2 = courent_line.x2;
           sorted_lines[sorted].y2 = courent_line.y2;
           sorted_lines[sorted].id = courent_line.id;
-          lines_used[line_i] = 1;
-          sorted++;
           success = 1;
-          break;
         } else if (last_line.x2 == courent_line.x2 && last_line.y2 == courent_line.y2) {
           sorted_lines[sorted].x1 = courent_line.x2;
           sorted_lines[sorted].y1 = courent_line.y2;
           sorted_lines[sorted].x2 = courent_line.x1;
           sorted_lines[sorted].y2 = courent_line.y1;
           sorted_lines[sorted].id = courent_line.id;
+          success = 1;
+        }
+
+        if (success) {
           lines_used[line_i] = 1;
           sorted++;
-          success = 1;
           break;
         }
       }
@@ -400,8 +429,20 @@ void sort_map_lines_as_polygon()
   }
 
   memcpy(map_lines, sorted_lines, sizeof(line) * map_lines_count);
-//  rotate_line_points_around_x_axis();
-  print_sorted_map_lines();
+  // rotate_line_points_around_x_axis();
+  // print_sorted_map_lines();
+
+  // Collect sorted verticles for polygon
+
+  number_of_verticles = 0;
+
+  while (number_of_verticles < map_lines_count) {
+    map_verticles[number_of_verticles].x = map_lines[number_of_verticles].x1;
+    map_verticles[number_of_verticles].y = map_lines[number_of_verticles].y1;
+    number_of_verticles++;
+  }
+
+  print_sorted_verticles();
 }
 
 void init_pol_localization()
