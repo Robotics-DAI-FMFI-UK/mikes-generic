@@ -367,11 +367,20 @@ int get_pose_base_on_corners_and_heading(corners_data *corners, base_data_type *
   // }
   // printf("\n");
 
+  point_2d entry = {
+    .x = 0,
+    .y = 0
+  };
+
   int positions[found_segments.count];
   get_position_representation_from_combination(combined_segments, combinations[best_combination_i], numberOfCombinedSegments, best_start, positions);
 
   point_2d potencial_locations_1[found_segments.count];
+  point_2d potencial_locations_1_real[found_segments.count];
+  point_2d potencial_locations_1_sensor[found_segments.count];
   point_2d potencial_locations_2[found_segments.count];
+  point_2d potencial_locations_2_real[found_segments.count];
+  point_2d potencial_locations_2_sensor[found_segments.count];
   int potencial_length = 0;
 
   for (int index = 0; index < found_segments.count; index++) {
@@ -379,11 +388,6 @@ int get_pose_base_on_corners_and_heading(corners_data *corners, base_data_type *
 
     line *wall = &map_lines[line_index];
     pol_segment_t *found_segment = &found_segments.segments[index];
-
-    point_2d entry = {
-      .x = 0,
-      .y = 0
-    };
 
     point_2d p_corner_segment_1 = found_segment->corner1.corner;
     point_2d p_corner_segment_2 = found_segment->corner2.corner;
@@ -403,18 +407,42 @@ int get_pose_base_on_corners_and_heading(corners_data *corners, base_data_type *
     if ((angle1 < ANGLE_MAXIMUM && angle2 < ANGLE_MAXIMUM) || (angle1 >= ANGLE_MAXIMUM && angle2 >= ANGLE_MAXIMUM)) {
       if (angle1 > angle2) {
         segment_left_distance = get_vector_length(&v_corner_segment_1);
+        potencial_locations_1_real[potencial_length].x = wall->x1;
+        potencial_locations_1_real[potencial_length].y = wall->y1;
+        potencial_locations_1_sensor[potencial_length] = p_corner_segment_1;
         segment_right_distance = get_vector_length(&v_corner_segment_2);
+        potencial_locations_2_real[potencial_length].x = wall->x2;
+        potencial_locations_2_real[potencial_length].y = wall->y2;
+        potencial_locations_2_sensor[potencial_length] = p_corner_segment_2;
       } else {
         segment_left_distance = get_vector_length(&v_corner_segment_2);
+        potencial_locations_1_real[potencial_length].x = wall->x2;
+        potencial_locations_1_real[potencial_length].y = wall->y2;
+        potencial_locations_1_sensor[potencial_length] = p_corner_segment_2;
         segment_right_distance = get_vector_length(&v_corner_segment_1);
+        potencial_locations_2_real[potencial_length].x = wall->x1;
+        potencial_locations_2_real[potencial_length].y = wall->y1;
+        potencial_locations_2_sensor[potencial_length] = p_corner_segment_1;
       }
     } else {
       if (angle1 < ANGLE_MAXIMUM) {
         segment_left_distance = get_vector_length(&v_corner_segment_1);
+        potencial_locations_1_real[potencial_length].x = wall->x1;
+        potencial_locations_1_real[potencial_length].y = wall->y1;
+        potencial_locations_1_sensor[potencial_length] = p_corner_segment_1;
         segment_right_distance = get_vector_length(&v_corner_segment_2);
+        potencial_locations_2_real[potencial_length].x = wall->x2;
+        potencial_locations_2_real[potencial_length].y = wall->y2;
+        potencial_locations_2_sensor[potencial_length] = p_corner_segment_2;
       } else {
         segment_left_distance = get_vector_length(&v_corner_segment_2);
+        potencial_locations_1_real[potencial_length].x = wall->x2;
+        potencial_locations_1_real[potencial_length].y = wall->y2;
+        potencial_locations_1_sensor[potencial_length] = p_corner_segment_2;
         segment_right_distance = get_vector_length(&v_corner_segment_1);
+        potencial_locations_2_real[potencial_length].x = wall->x1;
+        potencial_locations_2_real[potencial_length].y = wall->y1;
+        potencial_locations_2_sensor[potencial_length] = p_corner_segment_1;
       }
     }
 
@@ -441,9 +469,13 @@ int get_pose_base_on_corners_and_heading(corners_data *corners, base_data_type *
   }
 
   point_2d single_points_in_polygon[found_segments.count];
+  point_2d single_real_corners[found_segments.count];
+  point_2d single_sensor_corners[found_segments.count];
   int single_points_length = 0;
 
   point_2d double_points_in_polygon[found_segments.count * 2];
+  point_2d double_real_corners[found_segments.count * 2];
+  point_2d double_sensor_corners[found_segments.count * 2];
   int double_points_length = 0;
 
   for (int index = 0; index < potencial_length; index++) {
@@ -451,13 +483,29 @@ int get_pose_base_on_corners_and_heading(corners_data *corners, base_data_type *
     int second_in_polygon = is_in_polygon(map_verticles, number_of_verticles, &potencial_locations_1[index]);
 
     if (first_in_polygon && !second_in_polygon) {
-      single_points_in_polygon[single_points_length++] = potencial_locations_1[index];
+      single_points_in_polygon[single_points_length] = potencial_locations_1[index];
+      single_real_corners[single_points_length] = potencial_locations_1_real[index];
+      single_sensor_corners[single_points_length] = potencial_locations_1_sensor[index];
+      single_points_length++;
     } else if (second_in_polygon && !first_in_polygon) {
-      single_points_in_polygon[single_points_length++] = potencial_locations_2[index];
-    } else {
-      double_points_in_polygon[double_points_length++] = potencial_locations_1[index];
-      double_points_in_polygon[double_points_length++] = potencial_locations_2[index];
+      single_points_in_polygon[single_points_length] = potencial_locations_2[index];
+      single_real_corners[single_points_length] = potencial_locations_2_real[index];
+      single_sensor_corners[single_points_length] = potencial_locations_2_sensor[index];
+      single_points_length++;
+    } else if (first_in_polygon && second_in_polygon) {
+      double_points_in_polygon[double_points_length] = potencial_locations_1[index];
+      double_real_corners[double_points_length] = potencial_locations_1_real[index];
+      double_sensor_corners[double_points_length] = potencial_locations_1_sensor[index];
+      double_points_length++;
+      double_points_in_polygon[double_points_length] = potencial_locations_2[index];
+      double_real_corners[double_points_length] = potencial_locations_2_real[index];
+      double_sensor_corners[double_points_length] = potencial_locations_2_sensor[index];
+      double_points_length++;
     }
+  }
+
+  if (!single_points_length) {
+    return POL_LOCALIZATION_FAIL;
   }
 
   for (int index_1 = 0; index_1 < single_points_length; index_1++) {
@@ -514,7 +562,21 @@ int get_pose_base_on_corners_and_heading(corners_data *corners, base_data_type *
   center_final_point.x = center_final_point.x / (single_points_length + double_points_used);
   center_final_point.y = center_final_point.y / (single_points_length + double_points_used);
 
+  sleep(5);
   printf("Found final localization X: %6.4f Y: %6.4f\n", center_final_point.x, center_final_point.y);
+
+  for (int index = 0; index < single_points_length; index++) {
+    vector_2d corner_v;
+    vector_from_two_points(&center_final_point, &single_real_corners[index], &corner_v);
+    double map_corner_angle = math_azimuth_to_robot_azimuth(angle_from_axis_x(&corner_v));
+
+    vector_2d corner_tim_v;
+    vector_from_two_points(&entry, &single_sensor_corners[index], &corner_tim_v);
+    double robot_angle_to_corner = math_azimuth_to_robot_azimuth(angle_from_axis_x(&corner_tim_v));
+
+    double alpha = normAlpha(map_corner_angle - robot_angle_to_corner);
+    printf("Found potencional heading %4.4f\n", alpha);
+  }
 
   return POL_LOCALIZATION_SUCCESS;
 }
