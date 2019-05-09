@@ -500,11 +500,11 @@ int get_pose_base_on_corners_and_heading(corners_data *corners, base_data_type *
     double difference_vector_2_length = get_vector_length(&difference_vector_2);
 
     if (difference_vector_1_length < difference_vector_2_length) {
-      center_final_point.x += single_points_in_polygon[index].x;
-      center_final_point.y += single_points_in_polygon[index].y;
+      center_final_point.x += double_points_in_polygon[index].x;
+      center_final_point.y += double_points_in_polygon[index].y;
     } else {
-      center_final_point.x += single_points_in_polygon[index + 1].x;
-      center_final_point.y += single_points_in_polygon[index + 1].y;
+      center_final_point.x += double_points_in_polygon[index + 1].x;
+      center_final_point.y += double_points_in_polygon[index + 1].y;
     }
 
     double_points_used++;
