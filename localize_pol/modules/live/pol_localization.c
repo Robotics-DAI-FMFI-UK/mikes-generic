@@ -332,6 +332,21 @@ void tim_corner_new_data(corners_data *corners)
   }
 }
 
+void print_sorted_map_lines()
+{
+  for (int index_l = 0; index_l < map_lines_count; index_l++) {
+    printf("Line X1: %10.4f Y1: %10.4f X2: %10.4f Y2: %10.4f\n", map_lines[index_l].x1, map_lines[index_l].y1, map_lines[index_l].x2, map_lines[index_l].y2);
+  }
+}
+
+void rotate_line_points_around_x_axis()
+{
+  for (int index = 0; index < map_lines_count; index++) {
+    line *wall = &map_lines[index];
+    wall->y = -wall->y;
+  }
+}
+
 void sort_map_lines_as_polygon()
 {
   if (map_lines_count < 1) return;
@@ -384,14 +399,8 @@ void sort_map_lines_as_polygon()
   }
 
   memcpy(map_lines, sorted_lines, sizeof(line) * map_lines_count);
-//  print_sorted_map_lines();
-}
-
-void print_sorted_map_lines()
-{
-  for (int index_l = 0; index_l < map_lines_count; index_l++) {
-    printf("Line X1: %10.4f Y1: %10.4f X2: %10.4f Y2: %10.4f\n", map_lines[index_l].x1, map_lines[index_l].y1, map_lines[index_l].x2, map_lines[index_l].y2);
-  }
+  rotate_line_points_around_x_axis();
+  print_sorted_map_lines();
 }
 
 void init_pol_localization()
