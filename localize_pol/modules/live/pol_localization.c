@@ -267,7 +267,6 @@ int get_pose_base_on_corners_and_heading(corners_data *corners, base_data_type *
   }
 
   if (found_segments.count < 1 || found_segments.count > map_lines_count) {
-    printf("FAIL NOT ENOUGH SEGMENTS\n");
     return POL_LOCALIZATION_FAIL;
   }
 
@@ -358,7 +357,6 @@ int get_pose_base_on_corners_and_heading(corners_data *corners, base_data_type *
   }
 
   if (best_combination_i == -1) {
-    printf("FAIL NOT BEST COMBINATION\n");
     return POL_LOCALIZATION_FAIL;
   }
 
@@ -384,7 +382,6 @@ int get_pose_base_on_corners_and_heading(corners_data *corners, base_data_type *
   point_2d potencial_locations_2_real[found_segments.count];
   point_2d potencial_locations_2_sensor[found_segments.count];
   int potencial_length = 0;
-  sleep(5);
 
   for (int index = 0; index < found_segments.count; index++) {
     int line_index = positions[index];
@@ -466,9 +463,9 @@ int get_pose_base_on_corners_and_heading(corners_data *corners, base_data_type *
       potencial_length++;
     }
 
-     printf("Input X1: %6.4f Y1: %6.4f R1 %6.4f X2: %6.4f Y2: %6.4f R2 %6.4f Result X1: %6.4f Y1: %6.4f X2: %6.4f Y2: %6.4f\n",
-       c1.x, c1.y, c1.r, c2.x, c2.y, c2.r,
-       potencial_locations_1[potencial_length - 1].x, potencial_locations_1[potencial_length - 1].y, potencial_locations_2[potencial_length - 1].x, potencial_locations_2[potencial_length - 1].y);
+     // printf("Input X1: %6.4f Y1: %6.4f R1 %6.4f X2: %6.4f Y2: %6.4f R2 %6.4f Result X1: %6.4f Y1: %6.4f X2: %6.4f Y2: %6.4f\n",
+     //   c1.x, c1.y, c1.r, c2.x, c2.y, c2.r,
+     //   potencial_locations_1[potencial_length - 1].x, potencial_locations_1[potencial_length - 1].y, potencial_locations_2[potencial_length - 1].x, potencial_locations_2[potencial_length - 1].y);
   }
 
   point_2d single_points_in_polygon[found_segments.count];
@@ -508,7 +505,6 @@ int get_pose_base_on_corners_and_heading(corners_data *corners, base_data_type *
   }
 
   if (!single_points_length) {
-    printf("FAIL NOT SINGLE POINT\n");
     return POL_LOCALIZATION_FAIL;
   }
 
@@ -580,7 +576,12 @@ int get_pose_base_on_corners_and_heading(corners_data *corners, base_data_type *
 
     double alpha = normAlpha(map_corner_angle - robot_angle_to_corner);
     printf("Found potencional heading %4.4f\n", alpha);
+
+    result_pose->heading = alpha * RADIAN;
   }
+
+  result_pose->x = center_final_point.x;
+  result_pose->y = center_final_point.y;
 
   return POL_LOCALIZATION_SUCCESS;
 }

@@ -15,11 +15,12 @@
 #include "../mikes-common/modules/passive/line_map.h"
 #include "../mikes-common/modules/passive/x_line_map.h"
 #include "modules/live/pol_localization.h"
+#include "modules/passive/pol_map_localization.h"
 
 #include "core/config_mikes.h"
 
 void init_modules()
-{ 
+{
   init_base_module();
   init_ncurses_control();
   init_ui();
@@ -33,16 +34,19 @@ void init_modules()
 
   init_line_map(mikes_config.line_map_file);
   init_pol_localization();
-  // TODO add show in map
 
   init_x_base(400);
   init_x_tim571(7000, 400);
 
   init_x_line_map(mikes_config.line_map_file, 600, 350);
+
+  init_pol_map_localization();
 }
 
 void shutdown_modules()
 {
+  shutdown_pol_map_localization();
+
   shutdown_x_line_map();
 
   shutdown_pol_localization();
