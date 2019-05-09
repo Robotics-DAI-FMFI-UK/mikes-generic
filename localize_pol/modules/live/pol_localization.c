@@ -371,6 +371,8 @@ int get_pose_base_on_corners_and_heading(corners_data *corners, base_data_type *
 
   point_2d potencial_locations[found_segments.count];
 
+  sleep(5);
+
   for (int index = 0; index < found_segments.count; index++) {
     int line_index = positions[index];
 
@@ -442,8 +444,9 @@ int get_pose_base_on_corners_and_heading(corners_data *corners, base_data_type *
     point_2d intersection2;
     two_circles_intersection(&c1, &c2, &intersection1, &intersection2);
 
-    printf("Result X1: %6.4f Y1: %6.4f X2: %6.4f Y2: %6.4f\n", intersection1.x, intersection1.y, intersection2.x, intersection2.y);
-    sleep(5);
+    printf("Input X1: %6.4f Y1: %6.4f R1 %6.4f X2: %6.4f Y2: %6.4f R2 %6.4f Result X1: %6.4f Y1: %6.4f X2: %6.4f Y2: %6.4f\n",
+      c1.x, c1.y, c1.r, c2.x, c2.y, c2.r,
+      intersection1.x, intersection1.y, intersection2.x, intersection2.y);
     // TODO use distance from corners from segment to make circles from wall endpoints
     // Compute what point is in polygon and use it
     // store it
