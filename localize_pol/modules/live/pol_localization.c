@@ -42,7 +42,7 @@ int are_equals_two_segments(segment_data *segment1, segment_data *segment2)
   return 0;
 }
 
-int are_equals_two_corners(point_2d *corner1, point_2d *corne2)
+int are_equals_two_corners(point_2d *corner1, point_2d *corner2)
 {
   if (corner1->x == corner2->x && corner1->y == corner2->y) {
     return 1;
@@ -53,10 +53,10 @@ int are_equals_two_corners(point_2d *corner1, point_2d *corne2)
 
 int have_common_corner(pol_segment_t *segment1, pol_segment_t *segment2)
 {
-  if (are_equals_two_corners(&segment1->corner1, &segment2->corner1) ||
-      are_equals_two_corners(&segment1->corner2, &segment2->corner2) ||
-      are_equals_two_corners(&segment1->corner1, &segment2->corner2) ||
-      are_equals_two_corners(&segment1->corner2, &segment2->corner1)) {
+  if (are_equals_two_corners(&segment1->corner1.corner, &segment2->corner1.corner) ||
+      are_equals_two_corners(&segment1->corner2.corner, &segment2->corner2.corner) ||
+      are_equals_two_corners(&segment1->corner1.corner, &segment2->corner2.corner) ||
+      are_equals_two_corners(&segment1->corner2.corner, &segment2->corner1.corner)) {
     return 1;
   }
 
@@ -207,7 +207,7 @@ int get_pose_base_on_corners_and_heading(corners_data *corners, base_data_type *
   }
 
   printf("Combined segments result: ");
-  for (int index = 1; index < combined_segments_length; index++) {
+  for (int index = 0; index < combined_segments_length; index++) {
     printf("%3d ", combined_segments[index]);
   }
   printf("\n");
