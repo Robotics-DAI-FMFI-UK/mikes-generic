@@ -16,6 +16,9 @@
 
 #define MAX_POL_LOCALIZATION_CALLBACKS 20
 
+#define LINE_TO_SEGMENT_MULTIPLIER 10.0
+#define ANGLE_MAXIMUM 300
+
 static pthread_mutex_t      pol_localization_lock;
 static int                  fd[2];
 
@@ -26,7 +29,7 @@ static int map_lines_count;
 static line map_lines[MAX_LINES_IN_LINE_MAP];
 
 static int number_of_verticles;
-static point_2d map_verticles[MAX_LINES_IN_LINE_MAP];
+static point_2d map_verticles[MAX_LINES_IN_LINE_MAP + 1];
 
 static pol_localization_t   localization_data_local;
 
@@ -111,8 +114,6 @@ int get_number_of_combinations_items_to_holes(int items, int holes, int start)
   return total;
 }
 
-#define LINE_TO_SEGMENT_MULTIPLIER 10.0
-
 double get_difference_between_segment_and_line(segment_data *segment, line *wall)
 {
   point_2d start = {
@@ -136,22 +137,33 @@ double get_difference_between_segment_and_line(segment_data *segment, line *wall
 // found_segments -> all found segments in sequence
 // combines -> how many segments must be in sequence for current index
 // combinations -> how many spaces must be between every combines for current index
-double get_difference_of_combination(pol_segments_t *found_segments, int *combines, int *combinations, int numberOfCombinedSegments, int offset)
+void get_position_representation_from_combination(int *combines, int *combinations, int numberOfCombinedSegments, int offset, int *positions)
 {
-  double total_difference = 0;
-
   for (int index = 0, segment_index = 0, total_offset = offset; index < numberOfCombinedSegments; index++) {
     total_offset += combinations[index];
 
     for (int index_combined = 0; index_combined < combines[index]; index_combined++, segment_index++) {
       int line_index = (total_offset + segment_index) % map_lines_count;
-
-      pol_segment_t *found_segment = &found_segments->segments[segment_index];
-      line *wall = &map_lines[line_index];
-
-      double difference = get_difference_between_segment_and_line(&found_segment->segment, wall);
-      total_difference += fabs(difference);
+      positions[segment_index] = line_index;
     }
+  }
+}
+
+double get_difference_of_combination(pol_segments_t *found_segments, int *combines, int *combinations, int numberOfCombinedSegments, int offset)
+{
+  double total_difference = 0;
+
+  int positions[found_segments->count];
+  get_position_representation_from_combination(combines, combinations, numberOfCombinedSegments, offset, positions);
+
+  for (int index = 0; index < found_segments->count; index++) {
+    int line_index = positions[index];
+    line *wall = &map_lines[line_index];
+
+    pol_segment_t *found_segment = &found_segments->segments[index];
+
+    double difference = get_difference_between_segment_and_line(&found_segment->segment, wall);
+    total_difference += fabs(difference);
   }
 
   return total_difference;
@@ -169,6 +181,54 @@ int is_in_polygon(point_2d *verticles, int length, point_2d *test)
 
   return c;
 }
+
+// ----------------------------------------------------------
+// TODO Move to math_2d
+// ----------------------------------------------------------
+
+typedef struct point_circle_2d {
+  double x;
+  double y;
+  double r;
+} circle_2d;
+
+int two_circles_intersection(point_circle_2d *c1, point_circle_2d *c2, point_2d *result1, point_2d *result2) {
+  double val1, val2, test;
+  double D = sqrt((c1->x - c2->x) * (c1->x - c2->x) + (c1->y - c2->y) * (c1->y - c2->y));
+
+  if (((c1->r + c2->r) >= D) && (D >= fabs(c1->r - c2->r))) {
+    double a1 = D + c1->r + c2->r;
+    double a2 = D + c1->r - c2->r;
+    double a3 = D - c1->r + c2->r;
+    double a4 = -D + c1->r + c2->r;
+    double area = sqrt(a1 * a2 * a3 * a4) / 4;
+
+    val1 = (c1->x + c2->x) / 2 + (c2->x - c1->x) * (c1->r * c1->r - c2->r * c2->r) / (2 * D * D);
+    val2 = 2 * (c1->y - c2->y) * area / (D * D);
+    result1->x = val1 + val2;
+    result2->x = val1 - val2;
+
+    val1 = (c1->y + c2->y) / 2 + (c2->y - c1->y) * (c1->r * c1->r - c2->r * c2->r) / (2 * D * D);
+    val2 = 2 * (c1->x - c2->x) * area / (D * D);
+    result1->y = val1 - val2;
+    result2->y = val1 + val2;
+
+    test = fabs((result1->x - c1->x) * (result1->x - c1->x) + (result1->y - c1->y) * (result1->y - c1->y) - c1->r * c1->r);
+    if (test > 0.0000001) {
+      double tmp = result1->y;
+      result1->y = result2->y;
+      result2->y = tmp;
+    }
+
+    return 1;
+  }
+
+  return 0;
+}
+
+// ----------------------------------------------------------
+// End
+// ----------------------------------------------------------
 
 int get_pose_base_on_corners_and_heading(corners_data *corners, base_data_type *base_data, pose_type *result_pose)
 {
@@ -306,7 +366,90 @@ int get_pose_base_on_corners_and_heading(corners_data *corners, base_data_type *
   // }
   // printf("\n");
 
-  // TODO dostat poziciu z namapovanych udajov
+  int positions[found_segments.count];
+  get_position_representation_from_combination(combined_segments, combinations[index], numberOfCombinedSegments, start, positions);
+
+  point_2d potencial_locations[found_segments.count];
+
+  for (int index = 0; index < found_segments.count; index++) {
+    int line_index = positions[index];
+
+    line *wall = &map_lines[line_index];
+    pol_segment_t *found_segment = &found_segments.segments[index];
+
+    point_2d entry = {
+      .x = 0,
+      .y = 0
+    };
+
+    point_2d p_corner_segment_1 = found_segment->corner1.corner;
+    point_2d p_corner_segment_2 = found_segment->corner2.corner;
+
+    vector_2d v_corner_segment_1;
+    vector_2d v_corner_segment_2;
+
+    vector_from_two_points(&entry, &p_corner_segment_1, &v_corner_segment_1);
+    vector_from_two_points(&entry, &p_corner_segment_2, &v_corner_segment_2);
+
+    double angle1 = angle_from_axis_x(&v_corner_segment_1);
+    double angle2 = angle_from_axis_x(&v_corner_segment_2);
+
+    corner_data segment_left_corner;
+    corner_data segment_right_corner;
+
+    double segment_left_distance;
+    double segment_right_distance;
+
+    if (angle1 < ANGLE_MAXIMUM && angle2 < ANGLE_MAXIMUM || angle1 >= ANGLE_MAXIMUM && angle2 >= ANGLE_MAXIMUM) {
+      if (angle1 > angle2) {
+        segment_left_corner = found_segment->corner1;
+        segment_right_corner = found_segment->corner2;
+        segment_left_distance = get_vector_length(&v_corner_segment_1);
+        segment_right_distance = get_vector_length(&v_corner_segment_2);
+      } else {
+        segment_left_corner = found_segment->corner2;
+        segment_right_corner = found_segment->corner1;
+        segment_left_distance = get_vector_length(&v_corner_segment_2);
+        segment_right_distance = get_vector_length(&v_corner_segment_1);
+      }
+    } else {
+      if (angle1 < ANGLE_MAXIMUM) {
+        segment_left_corner = found_segment->corner1;
+        segment_right_corner = found_segment->corner2;
+        segment_left_distance = get_vector_length(&v_corner_segment_1);
+        segment_right_distance = get_vector_length(&v_corner_segment_2);
+      } else {
+        segment_left_corner = found_segment->corner2;
+        segment_right_corner = found_segment->corner1;
+        segment_left_distance = get_vector_length(&v_corner_segment_2);
+        segment_right_distance = get_vector_length(&v_corner_segment_1);
+      }
+    }
+
+    circle_2d c1 = {
+      .x = wall->x1,
+      .y = wall->y1,
+      .r = segment_left_distance / LINE_TO_SEGMENT_MULTIPLIER
+    };
+
+    circle_2d c2 = {
+      .x = wall->x2,
+      .y = wall->y2,
+      .r = segment_right_distance / LINE_TO_SEGMENT_MULTIPLIER
+    };
+
+    point_2d intersection1;
+    point_2d intersection2;
+    two_circles_intersection(&c1, &c2, &intersection1, &intersection2);
+
+    ptrintf("Result X1: %6.4f Y1: %6.4f X2: %6.4f Y2: %6.4f\n", intersection1.x, intersection1.y, intersection2.x, intersection2.y);
+    sleep(5);
+    // TODO use distance from corners from segment to make circles from wall endpoints
+    // Compute what point is in polygon and use it
+    // store it
+  }
+
+  // TODO get middle position of all potencial positions
 
   // TODO get position
   // return POL_LOCALIZATION_SUCCESS;
@@ -370,11 +513,10 @@ void rotate_line_points_around_x_axis()
 
 void print_sorted_verticles()
 {
-  printf("Verticles ");
+  printf("Verticles:\n");
   for (int index = 0; index < number_of_verticles; index++) {
-    printf("X: %10.4f Y: %10.4f ", map_verticles[index].x, map_verticles[index].y);
+    printf("Point X: %10.4f Y: %10.4f\n", map_verticles[index].x, map_verticles[index].y);
   }
-  printf("\n");
 }
 
 void sort_map_lines_as_polygon()
@@ -430,19 +572,21 @@ void sort_map_lines_as_polygon()
 
   memcpy(map_lines, sorted_lines, sizeof(line) * map_lines_count);
   // rotate_line_points_around_x_axis();
-  // print_sorted_map_lines();
+
 
   // Collect sorted verticles for polygon
+  map_verticles[0].x = map_lines[0].x1;
+  map_verticles[0].y = map_lines[0].y1;
+  number_of_verticles = 1;
 
-  number_of_verticles = 0;
-
-  while (number_of_verticles < map_lines_count) {
-    map_verticles[number_of_verticles].x = map_lines[number_of_verticles].x1;
-    map_verticles[number_of_verticles].y = map_lines[number_of_verticles].y1;
+  while (number_of_verticles - 1 < map_lines_count) {
+    map_verticles[number_of_verticles].x = map_lines[number_of_verticles - 1].x2;
+    map_verticles[number_of_verticles].y = map_lines[number_of_verticles - 1].y2;
     number_of_verticles++;
   }
 
-  print_sorted_verticles();
+  // print_sorted_map_lines();
+  // print_sorted_verticles();
 }
 
 void init_pol_localization()
