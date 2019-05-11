@@ -14,8 +14,9 @@
 //#include "../mikes-common/modules/live/xtion/xtion.h"
 #include "../mikes-common/modules/live/avoid.h"
 #include "../mikes-common/modules/live/navig.h"
+#include "../mikes-common/modules/passive/pose.h"
 #include "../mikes-common/modules/passive/x_base.h"
-#include "../mikes-common/modules/passive/x_tim571.h"
+#include "../mikes-common/modules/passive/x_hough_tim571.h"
 //#include "../mikes-common/modules/passive/x_xtion.h"
 #include "../mikes-common/modules/passive/x_line_map.h"
 #include "../mikes-common/modules/passive/actuator.h"
@@ -30,6 +31,7 @@
 
 void init_modules()
 {
+  init_pose(0, 0);
   init_base_module();
   set_motor_speeds(0, 0);
   init_ncurses_control();

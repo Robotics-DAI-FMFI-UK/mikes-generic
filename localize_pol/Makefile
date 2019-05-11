@@ -14,7 +14,7 @@ SRCS=$(COMMON_DIR)/modules/passive/mikes_logs.c \
      $(COMMON_DIR)/modules/live/gui.c \
      $(COMMON_DIR)/modules/live/tim571.c \
      $(COMMON_DIR)/modules/passive/x_base.c \
-     $(COMMON_DIR)/modules/passive/x_tim571.c \
+     $(COMMON_DIR)/modules/passive/x_hough_tim571.c \
      $(COMMON_DIR)/modules/live/tim_hough_transform.c \
      $(COMMON_DIR)/modules/live/line_filter.c \
      $(COMMON_DIR)/modules/live/tim_segment.c \

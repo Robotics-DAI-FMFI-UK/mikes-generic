@@ -7,11 +7,12 @@
 #include "../mikes-common/modules/live/gui.h"
 #include "../mikes-common/modules/live/tim571.h"
 #include "../mikes-common/modules/passive/x_base.h"
-#include "../mikes-common/modules/passive/x_tim571.h"
+#include "../mikes-common/modules/passive/x_hough_tim571.h"
 #include "../mikes-common/modules/live/tim_hough_transform.h"
 #include "../mikes-common/modules/live/line_filter.h"
 #include "../mikes-common/modules/live/tim_segment.h"
 #include "../mikes-common/modules/live/tim_corner.h"
+#include "../mikes-common/modules/passive/pose.h"
 #include "../mikes-common/modules/passive/line_map.h"
 #include "../mikes-common/modules/passive/x_line_map.h"
 #include "modules/live/pol_localization.h"
@@ -21,6 +22,7 @@
 
 void init_modules()
 {
+  init_pose(0, 0);
   init_base_module();
   init_ncurses_control();
   init_ui();
