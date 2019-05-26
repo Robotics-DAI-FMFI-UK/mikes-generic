@@ -43,6 +43,7 @@ void init_modules()
   init_avoid();
   init_navig();
   init_nxt();
+  sleep(5);
   init_wheels();
   avoid_zone_enable(1, 1);
 
