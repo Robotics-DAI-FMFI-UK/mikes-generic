@@ -162,6 +162,7 @@ void process_next_step()
       break;
     case SICK_STRATEGY_STATE_LOADED_ESCAPE:
       escape_now_and_quick();
+      sleep(5);
 
       avoid_zone_enable(1, 1);
       set_and_send_new_current_state(SICK_STRATEGY_STATE_RETURNING1);
