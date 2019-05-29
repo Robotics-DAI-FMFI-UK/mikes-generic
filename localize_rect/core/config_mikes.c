@@ -46,5 +46,7 @@ void load_config()
     mikes_config.line_map_file = config_get_alloc_strval(cfg, "line_map_file", "file_missing_in_config");
     mikes_config.xtion_samples_config = config_get_alloc_strval(cfg, "xtion_samples_config", "file_missing_in_config");
 
+    mikes_config.use_rect_localization = config_get_intval(cfg, "use_rect_localization", mikes_config.use_rect_localization);
+
     config_dispose(cfg);
 }

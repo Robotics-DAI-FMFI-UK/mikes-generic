@@ -1,37 +1,25 @@
 CC=gcc
 CPP=g++
-PROG=../bin/generic
+PROG=../bin/mapping
 COMMON_SRCS=
 COMMON_DIR=../mikes-common
 SRCS=$(COMMON_DIR)/modules/passive/mikes_logs.c \
      $(COMMON_DIR)/modules/live/ncurses_control.c \
      $(COMMON_DIR)/modules/live/base_module.c \
      $(COMMON_DIR)/modules/passive/pose.c \
+     $(COMMON_DIR)/modules/passive/gridmap.c \
+     $(COMMON_DIR)/modules/live/gridmapping.c \
      $(COMMON_DIR)/config/config.c \
      $(COMMON_DIR)/bites/util.c \
      $(COMMON_DIR)/bites/mikes.c \
      $(COMMON_DIR)/bites/pngwriter.c \
      $(COMMON_DIR)/modules/live/gui.c \
      $(COMMON_DIR)/modules/live/tim571.c \
-     $(COMMON_DIR)/modules/live/ust10lx.c \
-     $(COMMON_DIR)/modules/live/lidar.c \
-     $(COMMON_DIR)/modules/live/rfid_sensor.c \
      $(COMMON_DIR)/modules/passive/x_base.c \
      $(COMMON_DIR)/modules/passive/x_tim571.c \
-     $(COMMON_DIR)/modules/live/tim_hough_transform.c \
-     $(COMMON_DIR)/modules/live/line_filter.c \
-     $(COMMON_DIR)/modules/live/tim_segment.c \
-     $(COMMON_DIR)/modules/live/tim_corner.c \
-     $(COMMON_DIR)/bites/hough.c \
-     $(COMMON_DIR)/bites/filter.c \
-     $(COMMON_DIR)/bites/math_2d.c \
-     $(COMMON_DIR)/bites/corner.c \
-     $(COMMON_DIR)/bites/segment.c \
-     $(COMMON_DIR)/modules/passive/x_ust10lx.c \
-     $(COMMON_DIR)/modules/passive/x_lidar.c \
      $(COMMON_DIR)/modules/passive/x_xtion.c \
-     $(COMMON_DIR)/modules/passive/x_line_map.c \
-     generic.c \
+     $(COMMON_DIR)/modules/passive/x_gridmap.c \
+     mapping.c \
      core/config_mikes.c \
      ui.c
 

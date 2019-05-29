@@ -3,7 +3,7 @@
 
 #include "../mikes-common/config/config.h"
 
-#define MIKES_CONFIG "generic.cfg"
+#define MIKES_CONFIG "localize_pol.cfg"
 
 typedef struct {
     int autostart;
@@ -25,6 +25,8 @@ typedef struct {
     double map_azimuth;
     char *line_map_file;
     char *xtion_samples_config;
+
+    int use_pol_localization;
 } mikes_config_t;
 
 extern mikes_config_t mikes_config;
