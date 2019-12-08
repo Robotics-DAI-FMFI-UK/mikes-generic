@@ -12,6 +12,7 @@ typedef struct {
     int print_debug_logs;
     int use_ncurses_control;
     int use_tim571;
+    int use_t265;
     int use_xtion;
     char *xtion_samples_config;
     int gridmap_width;

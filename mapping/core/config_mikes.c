@@ -5,7 +5,7 @@
 
 mikes_config_t mikes_config;
 
-mikes_config_t default_mikes_config = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+mikes_config_t default_mikes_config = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
 mikes_config_t mikes_config;
 
 void load_config()
@@ -28,6 +28,7 @@ void load_config()
 
     mikes_config.use_ncurses_control = config_get_intval(cfg, "use_ncurses_control", mikes_config.use_ncurses_control);
 	mikes_config.use_tim571 = config_get_intval(cfg, "use_tim571", mikes_config.use_tim571);
+	mikes_config.use_t265 = config_get_intval(cfg, "use_t265", mikes_config.use_t265);
     mikes_config.use_xtion = config_get_intval(cfg, "use_xtion", mikes_config.use_xtion);
   
 	mikes_config.xtion_samples_config = config_get_alloc_strval(cfg, "xtion_samples_config", "file_missing_in_config");

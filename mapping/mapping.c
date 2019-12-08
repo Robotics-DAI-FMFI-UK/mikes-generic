@@ -6,6 +6,7 @@
 #include "ui.h"
 #include "../mikes-common/modules/live/gui.h"
 #include "../mikes-common/modules/live/tim571.h"
+#include "../mikes-common/modules/live/t265.h"
 #include "../mikes-common/modules/live/xtion/xtion.h"
 #include "../mikes-common/modules/live/gridmapping.h"
 #include "../mikes-common/modules/passive/gridmap.h"
@@ -26,6 +27,7 @@ void init_modules()
   init_gui();
   
   init_tim571();
+  init_t265();
   init_gridmap();
   init_gridmapping();
   init_xtion(64, 48);
