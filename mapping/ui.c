@@ -1,8 +1,11 @@
 #include <stdio.h>
+#include <time.h>
+#include <unistd.h>
 
 #include "../mikes-common/modules/live/ncurses_control.h"
 #include "../mikes-common/modules/live/base_module.h"
 #include "../mikes-common/bites/mikes.h"
+#include "../mikes-common/modules/live/gridmapping.h"
 
 static int window;
 
@@ -22,6 +25,8 @@ void key_listener(int key)
     case KEY_DOWN_ARROW: set_motor_speeds(-12, -12);
                          break;
     case ' ': stop_now();
+              usleep(1500000L);
+              start_scanning();
               break;
     case KEY_ESC: program_runs = 0;
                   break;
