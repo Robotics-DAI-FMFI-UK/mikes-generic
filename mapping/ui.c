@@ -26,6 +26,7 @@ void key_listener(int key)
     case KEY_DOWN_ARROW: set_motor_speeds(-12, -12);
                          break;
     case ' ': stop_now();
+              pause_mapping_navig(1);
               usleep(1500000L);
               start_scanning();
               break;
