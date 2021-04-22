@@ -6,6 +6,7 @@
 #include "../mikes-common/modules/live/base_module.h"
 #include "../mikes-common/bites/mikes.h"
 #include "../mikes-common/modules/live/gridmapping.h"
+#include "../mikes-common/modules/live/mapping_navig.h"
 
 static int window;
 
@@ -28,6 +29,8 @@ void key_listener(int key)
               usleep(1500000L);
               start_scanning();
               break;
+    case 'p': pause_mapping_navig(1);
+    case 's': pause_mapping_navig(0);
     case KEY_ESC: program_runs = 0;
                   break;
   }

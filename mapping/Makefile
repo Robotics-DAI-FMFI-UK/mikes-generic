@@ -9,6 +9,7 @@ SRCS=$(COMMON_DIR)/modules/passive/mikes_logs.c \
      $(COMMON_DIR)/modules/passive/pose.c \
      $(COMMON_DIR)/modules/passive/gridmap.c \
      $(COMMON_DIR)/modules/live/gridmapping.c \
+     $(COMMON_DIR)/modules/live/mapping_navig.c \
      $(COMMON_DIR)/config/config.c \
      $(COMMON_DIR)/bites/util.c \
      $(COMMON_DIR)/bites/mikes.c \

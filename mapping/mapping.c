@@ -9,6 +9,7 @@
 #include "../mikes-common/modules/live/t265.h"
 #include "../mikes-common/modules/live/xtion/xtion.h"
 #include "../mikes-common/modules/live/gridmapping.h"
+#include "../mikes-common/modules/live/mapping_navig.h"
 #include "../mikes-common/modules/passive/gridmap.h"
 #include "../mikes-common/modules/passive/x_base.h"
 #include "../mikes-common/modules/passive/pose.h"
@@ -30,6 +31,7 @@ void init_modules()
   init_t265();
   init_gridmap();
   init_gridmapping();
+  init_mapping_navig();
   init_xtion(64, 48);
 
   init_x_base(400);
@@ -42,6 +44,7 @@ void init_modules()
 void shutdown_modules()
 {
   shutdown_gridmapping();
+  shutdown_mapping_navig();
   shutdown_x_gridmap();
   shutdown_x_xtion();
   shutdown_x_tim571();
