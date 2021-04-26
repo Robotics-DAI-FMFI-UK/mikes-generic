@@ -17,6 +17,7 @@ SRCS=$(COMMON_DIR)/modules/passive/mikes_logs.c \
      $(COMMON_DIR)/modules/live/gui.c \
      $(COMMON_DIR)/modules/live/tim571.c \
      $(COMMON_DIR)/modules/live/t265.c \
+     $(COMMON_DIR)/modules/live/hcsr04.c \
      $(COMMON_DIR)/modules/passive/x_base.c \
      $(COMMON_DIR)/modules/passive/x_tim571.c \
      $(COMMON_DIR)/modules/passive/x_xtion.c \
