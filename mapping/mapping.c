@@ -7,6 +7,7 @@
 #include "../mikes-common/modules/live/gui.h"
 #include "../mikes-common/modules/live/tim571.h"
 #include "../mikes-common/modules/live/t265.h"
+#include "../mikes-common/modules/live/hcsr04.h"
 #include "../mikes-common/modules/live/xtion/xtion.h"
 #include "../mikes-common/modules/live/gridmapping.h"
 #include "../mikes-common/modules/live/mapping_navig.h"
@@ -29,6 +30,7 @@ void init_modules()
   init_gui();
   
   init_tim571();
+  init_hcsr04();
   init_t265();
   init_gridmap();
   init_gridmapping();
@@ -53,6 +55,7 @@ void shutdown_modules()
   shutdown_x_base();
   shutdown_x_sensor_fusion();
 
+  shutdown_hcsr04();
   shutdown_gui();
   shutdown_ui();
 }
