@@ -20,6 +20,7 @@ SRCS=$(COMMON_DIR)/modules/passive/mikes_logs.c \
      $(COMMON_DIR)/modules/live/hcsr04.c \
      $(COMMON_DIR)/modules/passive/x_base.c \
      $(COMMON_DIR)/modules/passive/x_tim571.c \
+     $(COMMON_DIR)/modules/passive/x_sensor_fusion.c \
      $(COMMON_DIR)/modules/passive/x_xtion.c \
      $(COMMON_DIR)/modules/passive/x_gridmap.c \
      mapping.c \

@@ -16,6 +16,7 @@
 #include "../mikes-common/modules/passive/x_tim571.h"
 #include "../mikes-common/modules/passive/x_xtion.h"
 #include "../mikes-common/modules/passive/x_gridmap.h"
+#include "../mikes-common/modules/passive/x_sensor_fusion.h"
 
 #include "core/config_mikes.h"
 
@@ -37,6 +38,7 @@ void init_modules()
   init_x_base(400);
   init_x_tim571(7000, 400);
   init_x_xtion(64, 48, 4, 300);
+  init_x_sensor_fusion(7000, 400);
 
   init_x_gridmap(440, 440, 400);
 }
@@ -49,6 +51,7 @@ void shutdown_modules()
   shutdown_x_xtion();
   shutdown_x_tim571();
   shutdown_x_base();
+  shutdown_x_sensor_fusion();
 
   shutdown_gui();
   shutdown_ui();
