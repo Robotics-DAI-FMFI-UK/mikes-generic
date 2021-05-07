@@ -42,7 +42,7 @@ void init_modules()
   init_x_xtion(64, 48, 4, 300);
   init_x_sensor_fusion(7000, 400);
 
-  init_x_gridmap(440, 440, 400);
+  init_x_gridmap(1040, 1040, 400);
 }
 
 void shutdown_modules()
